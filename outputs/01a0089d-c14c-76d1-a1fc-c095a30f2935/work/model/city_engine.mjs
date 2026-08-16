@@ -130,13 +130,23 @@ export function allocateCityTargets(scoredCities, config) {
   }
 
   const ranked = scoredCities.toSorted(compareCities);
-  let remaining = targetGuns;
-  const allocated = ranked.map((city) => {
-    const canReceiveTarget = city.isFixed || city.eligibleForAutoSelection;
-    const targetGunsForCity = canReceiveTarget ? Math.min(tierQuotas[city.tier], remaining) : 0;
+  const fixedCities = ranked.filter((city) => city.isFixed);
+  const fixedTargetGuns = fixedCities.reduce((sum, city) => sum + tierQuotas[city.tier], 0);
+  if (targetGuns < fixedTargetGuns) {
+    throw new Error("targetGuns cannot cover every fixed city quota");
+  }
+
+  let remaining = targetGuns - fixedTargetGuns;
+  const targetsByCity = new Map(fixedCities.map((city) => [city.city, tierQuotas[city.tier]]));
+  for (const city of ranked) {
+    if (city.isFixed || !city.eligibleForAutoSelection || remaining === 0) continue;
+    const targetGunsForCity = Math.min(tierQuotas[city.tier], remaining);
+    targetsByCity.set(city.city, targetGunsForCity);
     remaining -= targetGunsForCity;
-    return { ...city, targetGuns: targetGunsForCity };
-  });
+  }
+  if (remaining !== 0) throw new Error("candidate capacity cannot satisfy targetGuns");
+
+  const allocated = ranked.map((city) => ({ ...city, targetGuns: targetsByCity.get(city.city) ?? 0 }));
 
   const medianByTier = new Map(Object.entries(TIER_PRIORITY).map(([tier]) => [
     tier,
