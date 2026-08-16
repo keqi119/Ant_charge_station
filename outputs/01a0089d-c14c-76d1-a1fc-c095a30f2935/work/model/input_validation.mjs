@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const CITY_TIERS = new Set(["一线", "新一线", "二线", "三线"]);
 const SOURCE_FIELDS = [
+  "tierSourceUrl",
   "populationSourceUrl",
   "densitySourceUrl",
   "housingSourceUrl",
@@ -12,6 +13,8 @@ const CITY_FIELDS = [
   "province",
   "tier",
   "yicaiRank",
+  "tierSourceName",
+  "tierSourceUrl",
   "isFixed",
   "fixedOrder",
   "population10k",
@@ -33,7 +36,13 @@ const CITY_FIELDS = [
 ];
 
 function isHttpUrl(value) {
-  return typeof value === "string" && /^https?:\/\//u.test(value);
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 function isPositiveNumber(value) {
@@ -127,6 +136,9 @@ export function validateCityInputs(records, fixedCities) {
     }
     if (!Number.isInteger(record.yicaiRank) || record.yicaiRank <= 0) {
       throw new Error(`invalid Yicai rank row ${row}`);
+    }
+    if (!(typeof record.tierSourceName === "string" && record.tierSourceName.trim()) || !isHttpUrl(record.tierSourceUrl)) {
+      throw new Error(`invalid tier provenance row ${row}`);
     }
     if (typeof record.isFixed !== "boolean") {
       throw new Error(`invalid fixed flag row ${row}`);

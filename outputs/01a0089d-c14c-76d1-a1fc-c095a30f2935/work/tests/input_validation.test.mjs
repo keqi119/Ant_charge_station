@@ -34,6 +34,21 @@ const EXPECTED_MONTHLY_SOURCES = new Map([
   ["2024-12", "https://www.evcipa.org.cn/newsinfo/8137834.html"],
 ]);
 
+const TIER_SOURCE_NAME = "Yicai New First-Tier Cities Institute: 2025 Ranking of Cities' Business Attractiveness";
+const TIER_SOURCE_URL = "https://www.smg.cn/review/mobile/news/202505/0166469.html";
+
+const DIRECT_POPULATION_SOURCES = new Map([
+  ["郑州", "https://tjj.zhengzhou.gov.cn/tjgb/5012681.jhtml"],
+  ["洛阳", "https://lyrb.lyd.com.cn/images2/1/2021-05/21/010/20210521010_pdf.pdf"],
+  ["合肥", "https://tjj.wuhu.gov.cn/tjxx/tjfx/8282011.html"],
+  ["芜湖", "https://tjj.wuhu.gov.cn/tjxx/tjgb/8282562.html"],
+  ["阜阳", "https://tjj.wuhu.gov.cn/tjxx/tjfx/8282011.html"],
+  ["淮南", "https://tjj.huainan.gov.cn/tjsj/tjgb/551571618.html"],
+  ["石家庄", "https://tjj.sjz.gov.cn/columns/940d701f-5e56-4f5d-9ece-7968f6354993/202105/31/d72c2a6d-f9f9-486d-b378-f566b9c7ed21.html"],
+  ["保定", "https://www.baoding.gov.cn/content-173-312950.html"],
+  ["太原", "https://www.taiyuan.gov.cn/doc/2021/06/01/1096237.shtml"],
+]);
+
 function validSeasonality() {
   return [
     {
@@ -61,6 +76,8 @@ function validCity(overrides = {}) {
     province: "安徽",
     tier: "新一线",
     yicaiRank: 12,
+    tierSourceName: TIER_SOURCE_NAME,
+    tierSourceUrl: TIER_SOURCE_URL,
     isFixed: true,
     fixedOrder: 1,
     population10k: 1000,
@@ -101,6 +118,17 @@ test("seasonality rejects coerced numeric strings", () => {
   const volumeRows = validSeasonality();
   volumeRows[1].chargingKwh100m = "42.2";
   assert.throws(() => validateSeasonalityInputs(volumeRows), /invalid volume input row 2/);
+});
+
+test("URL validation rejects HTTP(S) prefixes without a hostname", () => {
+  const seasonality = validSeasonality();
+  seasonality[1].gunSourceUrl = "https://";
+  assert.throws(() => validateSeasonalityInputs(seasonality), /invalid gun input row 2/);
+
+  assert.throws(
+    () => validateCityInputs([validCity({ populationSourceUrl: "https://" })], ["合肥"]),
+    /non-HTTP source in populationSourceUrl/,
+  );
 });
 
 test("city validation rejects duplicate names", () => {
@@ -187,6 +215,17 @@ test("city validation rejects duplicate ranks and empty-string null substitutes"
   );
 });
 
+test("city validation requires row-level tier and rank provenance", () => {
+  const missingName = validCity();
+  delete missingName.tierSourceName;
+  assert.throws(() => validateCityInputs([missingName], ["合肥"]), /missing city field tierSourceName/);
+
+  assert.throws(
+    () => validateCityInputs([validCity({ tierSourceName: "", tierSourceUrl: "https://" })], ["合肥"]),
+    /invalid tier provenance/,
+  );
+});
+
 test("source-backed input files satisfy the exact roster, provenance, and coverage contract", (t) => {
   const seasonality = loadJson(join(here, "../data/seasonality_2024.json"));
   const cities = loadJson(join(here, "../data/city_inputs.json"));
@@ -224,6 +263,11 @@ test("source-backed input files satisfy the exact roster, provenance, and covera
       { city: "淮南", yicaiRank: 158 },
     ],
   );
+  assert.ok(cities.every((row) => row.tierSourceName === TIER_SOURCE_NAME));
+  assert.ok(cities.every((row) => row.tierSourceUrl === TIER_SOURCE_URL));
+  for (const [city, sourceUrl] of DIRECT_POPULATION_SOURCES) {
+    assert.equal(cities.find((row) => row.city === city)?.populationSourceUrl, sourceUrl);
+  }
 
   const coverage = {
     candidateCities: cities.length,
