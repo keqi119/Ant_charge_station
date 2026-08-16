@@ -142,7 +142,11 @@ test("scenarios, term comparison, checks, sources, and scope notes are formula-b
   assert.match(launchHelper, /SUM\(\$J28:\$O28\)/);
   assert.match(launchHelper, /SUM\(\$V28:\$AA28\)/);
   assert.doesNotMatch(launchHelper, /'城市分配'!\$P/);
-  assert.equal(sheet.getRange("A38").values[0][0], "六情景峰值资金缺口非负");
+  assert.equal(sheet.getRange("A38").values[0][0], "六情景峰值资金缺口勾稽");
+  const gapCheckFormula = sheet.getRange("B38").formulas[0][0];
+  for (const [scenarioRow, cashRow] of [[5, 10], [6, 16], [7, 22], [8, 28], [9, 34], [10, 40]]) {
+    assert.match(gapCheckFormula, new RegExp(`ABS\\(\\$K\\$${scenarioRow}-MAX\\(0,-MIN\\(\\$AF\\$${cashRow}:\\$CM\\$${cashRow}\\)\\)\\)`));
+  }
   assert.match(sheet.getRange("A39").values[0][0], /外部构建门禁/);
   assert.deepEqual(sheet.getRange("A42:I42").values[0], ["Item", "Value", "Units", "Period/As-of", "Source Type", "Source Name", "Ref", "Notes", "Accessed"]);
   const notes = sheet.getRange("A42:I180").values.flat().filter(Boolean).join(" | ");
@@ -157,6 +161,14 @@ test("scenarios, term comparison, checks, sources, and scope notes are formula-b
   const comments = await workbook.inspect({ kind: "thread", sheetId: "情景分析、检查与来源", range: "C7:H10", maxChars: 6000 });
   assert.match(comments.ndjson, /Task 9 approved scenario constant/);
   assert.match(comments.ndjson, /2026-08-16-charge-station-financing-model-design/);
+  const deploymentComments = await workbook.inspect({ kind: "thread", sheetId: "情景分析、检查与来源", range: "L4:M4", maxChars: 20000 });
+  assert.match(deploymentComments.ndjson, /"target":"L4"/);
+  assert.match(deploymentComments.ndjson, /"target":"M4"/);
+  assert.match(deploymentComments.ndjson, /Task 9 approved deployment constant/);
+  const deploymentMonthStyle = await workbook.inspect({ kind: "computedStyle", sheetId: "情景分析、检查与来源", range: "L5", maxChars: 2000 });
+  const slowRolloutStyle = await workbook.inspect({ kind: "computedStyle", sheetId: "情景分析、检查与来源", range: "M9", maxChars: 2000 });
+  assert.doesNotMatch(deploymentMonthStyle.ndjson, /008000/i);
+  assert.doesNotMatch(slowRolloutStyle.ndjson, /008000/i);
 });
 
 test("supplier terms move scenario payments and gaps with the main finance schedule", async () => {
@@ -172,6 +184,7 @@ test("supplier terms move scenario payments and gaps with the main finance sched
   };
   const nonzeroMonths = (values) => values.flatMap((value, index) => (Math.abs(Number(value) || 0) > 0.01 ? [index] : []));
   const gaps = [];
+  const originalTerms = assumptions.getRange("B31").values[0][0];
 
   for (const terms of [0, 2, 3]) {
     assumptions.getRange("B31").values = [[terms]];
@@ -192,6 +205,38 @@ test("supplier terms move scenario payments and gaps with the main finance sched
     gaps.push(Math.round(gap * 100) / 100);
   }
   assert.ok(new Set(gaps).size >= 2, `peak gap must respond to supplier terms: ${gaps.join(", ")}`);
+
+  assumptions.getRange("B31").values = [[originalTerms]];
+  reassign(deployment, "J23:U23");
+  reassign(finance, "L5:L16");
+  reassign(finance, "B103:BI119");
+  for (const row of [9, 15, 21, 27, 33, 39, 10, 16, 22, 28, 34, 40]) reassign(scenarios, `AF${row}:CM${row}`);
+  reassign(scenarios, "K5:K10");
+  reassign(scenarios, "B22:B38");
+  reassign(scenarios, "C22:C38");
+  reassign(scenarios, "D22:D38");
+  reassign(scenarios, "F22:F38");
+  reassign(scenarios, "B19");
+  assert.equal(scenarios.getRange("B19").values[0][0], "PASS");
+
+  const k5Formula = scenarios.getRange("K5").formulas[0][0];
+  const originalGap = scenarios.getRange("K5").values[0][0];
+  scenarios.getRange("K5").values = [[originalGap + 100]];
+  reassign(scenarios, "B38");
+  reassign(scenarios, "D38:F38");
+  reassign(scenarios, "B19");
+  assert.equal(scenarios.getRange("F38").values[0][0], "FAIL");
+  assert.equal(scenarios.getRange("B19").values[0][0], "FAIL");
+  scenarios.getRange("K5").formulas = [[k5Formula]];
+  reassign(scenarios, "B38");
+  reassign(scenarios, "D38:F38");
+  reassign(scenarios, "B19");
+  assert.equal(scenarios.getRange("F38").values[0][0], "PASS");
+  assert.equal(
+    scenarios.getRange("B19").values[0][0],
+    "PASS",
+    `restored scenario checks: ${JSON.stringify(scenarios.getRange("A22:F38").values)}`,
+  );
 
   const allocation = workbook.worksheets.getItem("城市分配");
   const fixedByCity = new Map(allocation.getRange("B6:D61").values.map((row) => [row[0], row[2]]));

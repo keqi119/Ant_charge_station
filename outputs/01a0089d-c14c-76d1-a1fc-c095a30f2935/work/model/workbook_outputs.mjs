@@ -416,6 +416,8 @@ function buildScenariosChecksAndSources(workbook) {
   section(sheet, "A3:AD3", "六情景矩阵（假设可见，结果由公式计算）");
   sheet.getRange("A4:L4").values = [["情景", "年均单枪日收入", "融资比例", "期限", "年化成本", "放款延迟", "物业方式", "其他运营成本率", "三年服务费", "全期DSCR", "峰值资金缺口", "部署月数"]];
   styleSection(sheet.getRange("A4:L4"));
+  sheet.getRange("M4:AD4").values = [[...Array.from({ length: SCENARIO_COHORTS }, (_, index) => `上线M${index + 1}`)]];
+  styleSection(sheet.getRange("M4:AD4"));
   sheet.getRange("A5:A10").values = [["基准"], ["保守收入"], ["融资收缩"], ["放款延迟"], ["慢建设"], ["综合压力"]];
   const scenarioFormulas = [
     ["='36月运营模型'!$B$23", "='核心假设'!$B$27", "='核心假设'!$B$28", "='核心假设'!$B$29", "='核心假设'!$B$30", "='核心假设'!$B$33", "='核心假设'!$B$36", "=12"],
@@ -452,6 +454,14 @@ function buildScenariosChecksAndSources(workbook) {
       `Source: Task 9 approved scenario constant | As-of: 2026-08-16 | URL: ${DESIGN_URL} | Accessed: 2026-08-16 | Notes: Approved stress-case definition; black formula text denotes an in-sheet design constant.`,
     );
   }
+  workbook.comments.addThread(
+    { cell: sheet.getRange("L4") },
+    `Source: Task 9 approved deployment constant | As-of: 2026-08-16 | URL: ${DESIGN_URL} | Accessed: 2026-08-16 | Notes: Header comment covers deployment-month constants in L5:L10.`,
+  );
+  workbook.comments.addThread(
+    { cell: sheet.getRange("M4") },
+    `Source: Task 9 approved deployment constant | As-of: 2026-08-16 | URL: ${DESIGN_URL} | Accessed: 2026-08-16 | Notes: Header comment covers approved slow-build rollout constants in M9:AD10.`,
+  );
   styleFormula(sheet.getRange("L5:AD10"));
   formatFinancial(sheet.getRange("B5:B10"));
   formatPercent(sheet.getRange("C5:C10"));
@@ -505,7 +515,7 @@ function buildScenariosChecksAndSources(workbook) {
     ["最低股东资金注入后不为负", "=MIN('融资租赁与资金缺口'!$B$119:$BI$119)", "=0", 0.01, "融资租赁与资金缺口!118:119", "最低股东资金填补峰值缺口"],
     ["36月报告/60月尾期边界", "=COUNTIF('36月运营模型'!$B$6:$AK$6,\"正式报告\")+COUNTIF('36月运营模型'!$AL$6:$BI$6,\"债务尾期\")", "='核心假设'!$B$8", 0, "36月运营模型!B5:BI20", "前36月正式报告，后24月债务尾期"],
     ["强制来源与代理说明完整", "=COUNTIF($A$43:$A$500,\"SRC-*\")-COUNTIFS($A$43:$A$500,\"SRC-*\",$G$43:$G$500,\"<>\")", "=0", 0, "情景分析、检查与来源!A43:I500", "每个来源ID均保留Ref；代理和缺失在Notes披露"],
-    ["六情景峰值资金缺口非负", "=COUNTIF($K$5:$K$10,\"<0\")", "=0", 0, "情景分析、检查与来源!K5:K10", "六情景资金缺口均按非负金额展示"],
+    ["六情景峰值资金缺口勾稽", "=MAX(ABS($K$5-MAX(0,-MIN($AF$10:$CM$10))),ABS($K$6-MAX(0,-MIN($AF$16:$CM$16))),ABS($K$7-MAX(0,-MIN($AF$22:$CM$22))),ABS($K$8-MAX(0,-MIN($AF$28:$CM$28))),ABS($K$9-MAX(0,-MIN($AF$34:$CM$34))),ABS($K$10-MAX(0,-MIN($AF$40:$CM$40))))", "=0", 0.01, "情景分析、检查与来源!K5:K10,AF10:CM40", "逐情景从月度累计现金独立重算峰值缺口并与结果列勾稽"],
   ];
   sheet.getRange("A22:A38").values = checks.map((row) => [row[0]]);
   sheet.getRange("B22:B38").formulas = checks.map((row) => [row[1]]);
