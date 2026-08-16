@@ -1,0 +1,5 @@
+.superpowers/sdd/
+outputs/**/work/node_modules/
+outputs/**/work/previews/
+outputs/**/work/*.log
+
