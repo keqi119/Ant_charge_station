@@ -29,3 +29,9 @@ test("rejects invalid date ranges and incomplete curves", () => {
   assert.throws(() => annualizePeakBenchmark(1, [], "2026-06-16", "2026-08-15"), /12 month/i);
   assert.throws(() => annualizePeakBenchmark(1, buildSeasonalityCurve(inputs), "bad", "2026-08-15"), /invalid date/i);
 });
+
+test("rejects impossible ISO calendar dates while accepting a valid leap day", () => {
+  const curve = buildSeasonalityCurve(inputs);
+  assert.throws(() => annualizePeakBenchmark(1, curve, "2026-02-31", "2026-03-01"), /invalid date/i);
+  assert.equal(annualizePeakBenchmark(1, curve, "2024-02-29", "2024-02-29"), 1 / curve[1].index);
+});

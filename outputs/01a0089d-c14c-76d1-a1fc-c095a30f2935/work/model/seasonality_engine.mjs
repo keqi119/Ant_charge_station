@@ -6,12 +6,23 @@ function requireFinitePositive(value, label) {
 }
 
 function parseUtcDate(value, label) {
-  const date = value instanceof Date
-    ? new Date(value.getTime())
-    : typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)
-      ? new Date(`${value}T00:00:00Z`)
-      : new Date(NaN);
+  if (value instanceof Date) {
+    const date = new Date(value.getTime());
+    if (!Number.isFinite(date.getTime())) throw new Error(`invalid date: ${label}`);
+    return date;
+  }
+  const match = typeof value === "string" && /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) throw new Error(`invalid date: ${label}`);
+  const [, year, month, day] = match;
+  const date = new Date(`${value}T00:00:00Z`);
   if (!Number.isFinite(date.getTime())) throw new Error(`invalid date: ${label}`);
+  if (
+    date.getUTCFullYear() !== Number(year)
+    || date.getUTCMonth() + 1 !== Number(month)
+    || date.getUTCDate() !== Number(day)
+  ) {
+    throw new Error(`invalid date: ${label}`);
+  }
   return date;
 }
 
