@@ -37,15 +37,19 @@ function buildFastContext() {
   });
   const sourceMatrix = Array.from({ length: 3050 }, () => Array(16).fill(null));
   sourceMatrix[0] = ["日期", "站点ID", "站点名称", "直流枪", "交流枪", "订单", "电量", "尖", "峰", "平", "谷", "分钟", "总额", "电费", "服务费", "备注"];
-  sourceMatrix[1] = [new Date("2026-06-16T00:00:00Z"), "S1", "测试站", 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, null];
+  for (let day = 0; day < 30; day += 1) {
+    const date = new Date(Date.UTC(2026, 5, 16 + day));
+    sourceMatrix[1 + day] = [date, "S1", "测试站1", 2, 0, 1, 10, 0, 0, 0, 0, 10, 200, 100, 100, null];
+    sourceMatrix[31 + day] = [date, "S2", "测试站2", 2, 0, 1, 8, 0, 0, 0, 0, 10, 160, 80, 80, null];
+  }
   sourceMatrix[3049][0] = new Date("2026-08-15T00:00:00Z");
   return {
     sourcePath: "D:/source.xlsx",
     sourceMatrix,
     historical: {
-      stationProfiles: [{ stationId: "S1", stationName: "测试站" }],
-      benchmarks: { matureP25: 0, matureMedian: 0, matureWeighted: 0 },
-      matureStationCount: 1,
+      stationProfiles: [{ stationId: "S1", stationName: "测试站1" }, { stationId: "S2", stationName: "测试站2" }],
+      benchmarks: { matureP25: 42.5, matureMedian: 45, matureWeighted: 45 },
+      matureStationCount: 2,
       rowCount: 3049,
       reconciliations: { grossComponentsDifference: 0 },
     },
@@ -129,11 +133,13 @@ test("selectors, source comments, and finance color conventions are present", as
   assert.match(threads.ndjson, /Accessed: 2026-08-16/);
 });
 
-test("visible Task 8 checks calculate to OK", async () => {
-  const workbook = await getRealWorkbook();
+test("formal model checks and overall status calculate to PASS", async () => {
+  const workbook = await buildModel({ context: buildFastContext() });
   const checks = workbook.worksheets.getItem("情景分析、检查与来源");
-  const statuses = checks.getRange("F5:F15").values.flat();
-  assert.deepEqual(statuses, Array(11).fill("OK"));
+  const statuses = checks.getRange("F22:F38").values.flat();
+  assert.deepEqual(statuses, Array(17).fill("PASS"));
+  assert.equal(checks.getRange("B19").values[0][0], "PASS");
+  assert.equal(checks.getRange("B19").formulas[0][0], '=IF(COUNTIF(F22:F38,"FAIL")=0,"PASS","FAIL")');
 });
 
 test("workbook formula-error scan is clean", async () => {
@@ -181,9 +187,10 @@ test("editing city weights reorders candidates and recalculates formula-linked J
   assert.equal(allocation.getRange(`K${xuzhouRow}`).values[0][0], 0.70);
   assert.equal(allocation.getRange("J6:J61").values.flat().reduce((sum, value) => sum + value, 0), 30000);
   assert.deepEqual(
-    workbook.worksheets.getItem("情景分析、检查与来源").getRange("F11:F15").values.flat(),
-    Array(5).fill("OK"),
+    workbook.worksheets.getItem("情景分析、检查与来源").getRange("F22:F38").values.flat(),
+    Array(17).fill("PASS"),
   );
+  assert.equal(workbook.worksheets.getItem("情景分析、检查与来源").getRange("B19").values[0][0], "PASS");
   const dynamicRanges = JSON.stringify([
     workbook.worksheets.getItem("城市数据库").getRange("AD6:AG61").values,
     allocation.getRange("A6:S61").values,
