@@ -29,6 +29,17 @@ test("normalization excludes blank rows and makes blank numeric inputs zero", ()
   assert.equal(records[0].date.toISOString().slice(0, 10), "2026-06-15");
 });
 
+test("normalization preserves worksheet row numbers after internal blank rows", () => {
+  const records = normalizeSourceMatrix([
+    ["日期", "站点ID", "站点名称"],
+    ["2026-06-16", "S-1", "测试站一", 2, 0],
+    Array(16).fill(""),
+    ["2026-06-17", "S-2", "测试站二", 4, 0],
+  ]);
+  assert.equal(records.length, 2);
+  assert.equal(records[1].rawRowNumber, 4);
+});
+
 test("normalization preserves all required raw-record fields", () => {
   const record = normalizeSourceMatrix([["header"], [new Date("2026-06-16T00:00:00Z"), 1, "站", 1, 0]])[0];
   assert.deepEqual(Object.keys(record), [

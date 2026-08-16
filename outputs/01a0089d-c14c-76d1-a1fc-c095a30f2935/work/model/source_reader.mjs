@@ -10,7 +10,10 @@ export async function loadSourceMatrix(path = PATHS.sourceWorkbook) {
 }
 
 export function normalizeSourceMatrix(matrix) {
-  return matrix.slice(1).filter((row) => row.some((value) => value !== null && value !== "")).map((row, i) => ({
+  return matrix.slice(1)
+    .map((row, index) => ({ row, rawRowNumber: index + 2 }))
+    .filter(({ row }) => row.some((value) => value !== null && value !== ""))
+    .map(({ row, rawRowNumber }) => ({
     date: row[0] instanceof Date ? row[0] : new Date(`${row[0]}T00:00:00+08:00`),
     stationId: String(row[1]),
     stationName: String(row[2]),
@@ -26,6 +29,6 @@ export function normalizeSourceMatrix(matrix) {
     gross: num(row[12]),
     electricityFee: num(row[13]),
     serviceFee: num(row[14]),
-    rawRowNumber: i + 2,
+    rawRowNumber,
   }));
 }
