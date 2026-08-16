@@ -1,0 +1,106 @@
+[
+  {
+    "month": "2023-12",
+    "monthEndPublicGuns": 2726000,
+    "chargingKwh100m": null,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183139.html",
+    "volumeSourceUrl": "",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-01",
+    "monthEndPublicGuns": 2782000,
+    "chargingKwh100m": 42.2,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183140.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183140.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-02",
+    "monthEndPublicGuns": 2826000,
+    "chargingKwh100m": 36.4,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183135.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183135.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-03",
+    "monthEndPublicGuns": 2909000,
+    "chargingKwh100m": 37.9,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183133.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183133.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-04",
+    "monthEndPublicGuns": 2977000,
+    "chargingKwh100m": 39.4,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183136.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183136.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-05",
+    "monthEndPublicGuns": 3049000,
+    "chargingKwh100m": 41.4,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183100.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183100.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-06",
+    "monthEndPublicGuns": 3122000,
+    "chargingKwh100m": 45.6,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183099.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183099.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-07",
+    "monthEndPublicGuns": 3209000,
+    "chargingKwh100m": 50.1,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182573.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182573.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-08",
+    "monthEndPublicGuns": 3263000,
+    "chargingKwh100m": 53.0,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183095.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8183095.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-09",
+    "monthEndPublicGuns": 3329000,
+    "chargingKwh100m": 50.4,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182568.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182568.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-10",
+    "monthEndPublicGuns": 3391000,
+    "chargingKwh100m": 50.0,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182570.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182570.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-11",
+    "monthEndPublicGuns": 3460000,
+    "chargingKwh100m": 52.0,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182565.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8182565.html",
+    "accessedDate": "2026-08-16"
+  },
+  {
+    "month": "2024-12",
+    "monthEndPublicGuns": 3579000,
+    "chargingKwh100m": 59.1,
+    "gunSourceUrl": "https://www.evcipa.org.cn/newsinfo/8137834.html",
+    "volumeSourceUrl": "https://www.evcipa.org.cn/newsinfo/8137834.html",
+    "accessedDate": "2026-08-16"
+  }
+]
