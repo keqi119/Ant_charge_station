@@ -221,3 +221,169 @@ export function validateCityInputs(records, fixedCities) {
 
   return records;
 }
+
+export function validateCityMetricAuditManifest(manifest, records) {
+  if (!manifest || typeof manifest !== "object" || manifest.schemaVersion !== 1) {
+    throw new Error("invalid city metric audit manifest schema");
+  }
+  if (!Array.isArray(records) || !Array.isArray(manifest.cities)) {
+    throw new TypeError("city inputs and audit manifest cities must be arrays");
+  }
+
+  const source = manifest.sources?.mohurd2022CityConstruction;
+  if (
+    !source ||
+    !isHttpUrl(source.indexUrl) ||
+    !isHttpUrl(source.directUrl) ||
+    source.sheet !== "2-2" ||
+    source.workbookYear !== 2022 ||
+    source.rowNumberBasis !== "Excel worksheet row, 1-based" ||
+    !Number.isInteger(source.fileSizeBytes) ||
+    source.fileSizeBytes <= 0 ||
+    !/^[a-f0-9]{64}$/.test(source.sha256)
+  ) {
+    throw new Error("invalid MOHURD source identity in audit manifest");
+  }
+
+  const housingContract = manifest.contracts?.housing;
+  const chargingContract = manifest.contracts?.charging;
+  if (
+    housingContract?.requiredUnit !== "个" ||
+    !Array.isArray(housingContract.allowedProxyMetrics) ||
+    !Array.isArray(housingContract.allowedExecutionStatuses) ||
+    housingContract.directSourceRequiredWhenPopulated !== true
+  ) {
+    throw new Error("invalid housing audit contract");
+  }
+  if (
+    chargingContract?.requiredUnit !== "枪" ||
+    chargingContract.requiredGeography !== "市级" ||
+    chargingContract.requiredMetric !== "公共充电枪数量" ||
+    chargingContract.directSourceRequiredWhenPopulated !== true ||
+    chargingContract.provinceSubstitutionAllowed !== false
+  ) {
+    throw new Error("invalid charging audit contract");
+  }
+
+  if (manifest.cities.length !== records.length) {
+    throw new Error("audit manifest city count mismatch");
+  }
+  const manifestNames = manifest.cities.map((entry) => entry?.city);
+  if (new Set(manifestNames).size !== manifestNames.length) {
+    throw new Error("duplicate audit manifest city");
+  }
+  const byCity = new Map(manifest.cities.map((entry) => [entry.city, entry]));
+
+  for (const record of records) {
+    const audit = byCity.get(record.city);
+    if (!audit) throw new Error(`missing audit manifest city ${record.city}`);
+
+    const population = audit.population;
+    if (
+      population?.expectedValue10k !== record.population10k ||
+      population?.year !== record.populationYear ||
+      population?.directSourceUrl !== record.populationSourceUrl ||
+      !isPositiveNumber(population.expectedValue10k) ||
+      !Number.isInteger(population.year) ||
+      !isHttpUrl(population.directSourceUrl)
+    ) {
+      throw new Error(`${record.city}: population manifest drift`);
+    }
+
+    const density = audit.density;
+    const rawTemporary = density?.rawTemporaryPopulation10k;
+    const rawArea = density?.rawBuiltAreaComponentsKm2?.builtArea;
+    if (
+      !density ||
+      density.sourceId !== "mohurd2022CityConstruction" ||
+      density.year !== 2022 ||
+      density.sheet !== "2-2" ||
+      density.directSourceUrl !== source.directUrl ||
+      !Number.isInteger(density.officialRow) ||
+      density.officialRow <= 0 ||
+      !isPositiveNumber(density.rawUrbanPopulation10k) ||
+      !(rawTemporary === null || isNonNegativeNumber(rawTemporary)) ||
+      !(rawArea === null || isPositiveNumber(rawArea)) ||
+      density.rawBuiltAreaKm2 !== rawArea ||
+      density.computedBuiltAreaKm2 !== rawArea
+    ) {
+      throw new Error(`${record.city}: invalid density manifest row`);
+    }
+    const computedUrban = Number(
+      (density.rawUrbanPopulation10k + (rawTemporary ?? 0)).toFixed(10),
+    );
+    if (density.computedUrbanPopulation10k !== computedUrban) {
+      throw new Error(`${record.city}: density computation drift`);
+    }
+    if (
+      density.expectedUrbanPopulation10k !== record.urbanPopulation10k ||
+      density.expectedBuiltAreaKm2 !== record.builtAreaKm2
+    ) {
+      throw new Error(`${record.city}: density manifest drift`);
+    }
+    if (record.urbanPopulation10k !== null || record.builtAreaKm2 !== null) {
+      if (
+        record.urbanPopulation10k !== computedUrban ||
+        record.builtAreaKm2 !== rawArea ||
+        record.densityYear !== density.year ||
+        record.densitySourceUrl !== density.directSourceUrl ||
+        !isHttpUrl(density.directSourceUrl)
+      ) {
+        throw new Error(`${record.city}: density manifest drift`);
+      }
+    } else if (
+      record.densityYear !== null ||
+      record.densitySourceUrl !== "" ||
+      !(typeof density.missingReason === "string" && density.missingReason.trim())
+    ) {
+      throw new Error(`${record.city}: density missing reason or null state invalid`);
+    }
+
+    const housing = audit.housing;
+    if (
+      housing?.expectedValue !== record.pre2005HousingProxy ||
+      housing?.year !== record.housingYear ||
+      housing?.directSourceUrl !== record.housingSourceUrl ||
+      housing?.proxyMetric !== record.housingMetric
+    ) {
+      throw new Error(`${record.city}: housing manifest drift`);
+    }
+    if (record.pre2005HousingProxy !== null) {
+      if (
+        housing.unit !== housingContract.requiredUnit ||
+        !housingContract.allowedProxyMetrics.includes(housing.proxyMetric) ||
+        !housingContract.allowedExecutionStatuses.includes(housing.executionStatus) ||
+        !Number.isInteger(housing.year) ||
+        !isHttpUrl(housing.directSourceUrl)
+      ) {
+        throw new Error(`${record.city}: housing manifest semantics invalid`);
+      }
+    } else if (!(typeof housing.missingReason === "string" && housing.missingReason.trim())) {
+      throw new Error(`${record.city}: housing missing reason required`);
+    }
+
+    const charging = audit.charging;
+    if (
+      charging?.expectedValue !== record.publicChargingGuns ||
+      charging?.year !== record.chargingYear ||
+      charging?.directSourceUrl !== record.chargingSourceUrl
+    ) {
+      throw new Error(`${record.city}: charging manifest drift`);
+    }
+    if (record.publicChargingGuns !== null) {
+      if (
+        charging.unit !== chargingContract.requiredUnit ||
+        charging.geography !== chargingContract.requiredGeography ||
+        charging.metric !== chargingContract.requiredMetric ||
+        !Number.isInteger(charging.year) ||
+        !isHttpUrl(charging.directSourceUrl)
+      ) {
+        throw new Error(`${record.city}: charging manifest semantics invalid`);
+      }
+    } else if (!(typeof charging.missingReason === "string" && charging.missingReason.trim())) {
+      throw new Error(`${record.city}: charging missing reason required`);
+    }
+  }
+
+  return manifest.cities;
+}

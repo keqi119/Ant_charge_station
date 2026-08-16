@@ -1,0 +1,2512 @@
+{
+  "schemaVersion": 1,
+  "generatedDate": "2026-08-16",
+  "sources": {
+    "mohurd2022CityConstruction": {
+      "identity": "住房和城乡建设部《2022年城市建设统计年鉴》城市部分",
+      "indexUrl": "https://www.mohurd.gov.cn/gongkai/fdzdgknr/sjfb/tjxx/jstjnj/index.html",
+      "directUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+      "downloadedFileName": "4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+      "fileSizeBytes": 2435072,
+      "sha256": "2b202bdced79b66d6a893d6060755ef5f62ea3790684c749363279e3f80d8552",
+      "workbookYear": 2022,
+      "sheet": "2-2",
+      "sheetTitle": "城市人口和建设用地（2022年）",
+      "rowNumberBasis": "Excel worksheet row, 1-based",
+      "columns": {
+        "rawUrbanPopulation10k": "城区人口",
+        "rawTemporaryPopulation10k": "城区暂住人口",
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": "建成区面积"
+        }
+      }
+    }
+  },
+  "contracts": {
+    "housing": {
+      "requiredUnit": "个",
+      "allowedProxyMetrics": [
+        "年度城镇老旧小区改造小区数"
+      ],
+      "allowedExecutionStatuses": [
+        "计划",
+        "新开工",
+        "完工"
+      ],
+      "directSourceRequiredWhenPopulated": true
+    },
+    "charging": {
+      "requiredUnit": "枪",
+      "requiredGeography": "市级",
+      "requiredMetric": "公共充电枪数量",
+      "directSourceRequiredWhenPopulated": true,
+      "provinceSubstitutionAllowed": false
+    }
+  },
+  "cities": [
+    {
+      "city": "上海",
+      "population": {
+        "expectedValue10k": 2487.0895,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.sh.gov.cn/tjgb/20210517/cc22f48611f24627bc5ee2ae96ca56d4.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 184,
+        "rawUrbanPopulation10k": 2475.89,
+        "rawTemporaryPopulation10k": null,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 1242
+        },
+        "rawBuiltAreaKm2": 1242,
+        "computedUrbanPopulation10k": 2475.89,
+        "computedBuiltAreaKm2": 1242,
+        "expectedUrbanPopulation10k": 2475.89,
+        "expectedBuiltAreaKm2": 1242,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "北京",
+      "population": {
+        "expectedValue10k": 2189.3095,
+        "year": 2020,
+        "directSourceUrl": "https://www.beijing.gov.cn/gongkai/shuju/sjjd/202105/t20210519_2392881.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 9,
+        "rawUrbanPopulation10k": 1912.8,
+        "rawTemporaryPopulation10k": null,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": null
+        },
+        "rawBuiltAreaKm2": null,
+        "computedUrbanPopulation10k": 1912.8,
+        "computedBuiltAreaKm2": null,
+        "expectedUrbanPopulation10k": null,
+        "expectedBuiltAreaKm2": null,
+        "missingReason": "Official MOHURD sheet 2-2 row 9 has a blank built-area cell; paired model density inputs remain null."
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "深圳",
+      "population": {
+        "expectedValue10k": 1756.0061,
+        "year": 2020,
+        "directSourceUrl": "https://stats.gd.gov.cn/attachment/0/421/421309/3283428.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 483,
+        "rawUrbanPopulation10k": 1766.18,
+        "rawTemporaryPopulation10k": null,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 962.17
+        },
+        "rawBuiltAreaKm2": 962.17,
+        "computedUrbanPopulation10k": 1766.18,
+        "computedBuiltAreaKm2": 962.17,
+        "expectedUrbanPopulation10k": 1766.18,
+        "expectedBuiltAreaKm2": 962.17,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "广州",
+      "population": {
+        "expectedValue10k": 1867.6605,
+        "year": 2020,
+        "directSourceUrl": "https://stats.gd.gov.cn/attachment/0/421/421309/3283428.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 479,
+        "rawUrbanPopulation10k": 756.91,
+        "rawTemporaryPopulation10k": 612.79,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 1366.02
+        },
+        "rawBuiltAreaKm2": 1366.02,
+        "computedUrbanPopulation10k": 1369.7,
+        "computedBuiltAreaKm2": 1366.02,
+        "expectedUrbanPopulation10k": 1369.7,
+        "expectedBuiltAreaKm2": 1366.02,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "成都",
+      "population": {
+        "expectedValue10k": 2093.7757,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.sc.gov.cn/scstjj/c111702/2021/5/26/68cf8ce902a44c389e72591bd5a31ca2.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 557,
+        "rawUrbanPopulation10k": 842.61,
+        "rawTemporaryPopulation10k": 414.63,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 1063.68
+        },
+        "rawBuiltAreaKm2": 1063.68,
+        "computedUrbanPopulation10k": 1257.24,
+        "computedBuiltAreaKm2": 1063.68,
+        "expectedUrbanPopulation10k": 1257.24,
+        "expectedBuiltAreaKm2": 1063.68,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "杭州",
+      "population": {
+        "expectedValue10k": 1193.601,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 221,
+        "rawUrbanPopulation10k": 709,
+        "rawTemporaryPopulation10k": 293.1,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 829.41
+        },
+        "rawBuiltAreaKm2": 829.41,
+        "computedUrbanPopulation10k": 1002.1,
+        "computedBuiltAreaKm2": 829.41,
+        "expectedUrbanPopulation10k": 1002.1,
+        "expectedBuiltAreaKm2": 829.41,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "重庆",
+      "population": {
+        "expectedValue10k": 3205.4159,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.cq.gov.cn/zwgk_233/fdzdgknr/tjxx/sjjd_55469/202105/t20210513_9277470.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 555,
+        "rawUrbanPopulation10k": 1289.27,
+        "rawTemporaryPopulation10k": 328.23,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 1640.8
+        },
+        "rawBuiltAreaKm2": 1640.8,
+        "computedUrbanPopulation10k": 1617.5,
+        "computedBuiltAreaKm2": 1640.8,
+        "expectedUrbanPopulation10k": 1617.5,
+        "expectedBuiltAreaKm2": 1640.8,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "武汉",
+      "population": {
+        "expectedValue10k": 1232.6518,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.hubei.gov.cn/tjsj/tjgb/pcgb/wnpc/qrp/202105/t20210525_3559343.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 407,
+        "rawUrbanPopulation10k": 713.9,
+        "rawTemporaryPopulation10k": 366.74,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 925.97
+        },
+        "rawBuiltAreaKm2": 925.97,
+        "computedUrbanPopulation10k": 1080.64,
+        "computedBuiltAreaKm2": 925.97,
+        "expectedUrbanPopulation10k": 1080.64,
+        "expectedBuiltAreaKm2": 925.97,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "苏州",
+      "population": {
+        "expectedValue10k": 1274.8262,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 195,
+        "rawUrbanPopulation10k": 310.66,
+        "rawTemporaryPopulation10k": 189.42,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 481.33
+        },
+        "rawBuiltAreaKm2": 481.33,
+        "computedUrbanPopulation10k": 500.08,
+        "computedBuiltAreaKm2": 481.33,
+        "expectedUrbanPopulation10k": 500.08,
+        "expectedBuiltAreaKm2": 481.33,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "西安",
+      "population": {
+        "expectedValue10k": 1295.2907,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.shaanxi.gov.cn/tjsj/ndsj/pcsj/rkpc/202505/P020250522415694808635.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 646,
+        "rawUrbanPopulation10k": 699.75,
+        "rawTemporaryPopulation10k": 70.25,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 807.57
+        },
+        "rawBuiltAreaKm2": 807.57,
+        "computedUrbanPopulation10k": 770,
+        "computedBuiltAreaKm2": 807.57,
+        "expectedUrbanPopulation10k": 770,
+        "expectedBuiltAreaKm2": 807.57,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "南京",
+      "population": {
+        "expectedValue10k": 931.4685,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 186,
+        "rawUrbanPopulation10k": 657.31,
+        "rawTemporaryPopulation10k": 42,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 885.73
+        },
+        "rawBuiltAreaKm2": 885.73,
+        "computedUrbanPopulation10k": 699.31,
+        "computedBuiltAreaKm2": 885.73,
+        "expectedUrbanPopulation10k": 699.31,
+        "expectedBuiltAreaKm2": 885.73,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "长沙",
+      "population": {
+        "expectedValue10k": 1004.7914,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.hunan.gov.cn/hntj/m/tjgb_1/202105/t20210519_19050124.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 446,
+        "rawUrbanPopulation10k": 520.51,
+        "rawTemporaryPopulation10k": null,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 441.68
+        },
+        "rawBuiltAreaKm2": 441.68,
+        "computedUrbanPopulation10k": 520.51,
+        "computedBuiltAreaKm2": 441.68,
+        "expectedUrbanPopulation10k": 520.51,
+        "expectedBuiltAreaKm2": 441.68,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "郑州",
+      "population": {
+        "expectedValue10k": 1260.0574,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.zhengzhou.gov.cn/tjgb/5012681.jhtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 367,
+        "rawUrbanPopulation10k": 449.55,
+        "rawTemporaryPopulation10k": 317.2,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 729.12
+        },
+        "rawBuiltAreaKm2": 729.12,
+        "computedUrbanPopulation10k": 766.75,
+        "computedBuiltAreaKm2": 729.12,
+        "expectedUrbanPopulation10k": 766.75,
+        "expectedBuiltAreaKm2": 729.12,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "天津",
+      "population": {
+        "expectedValue10k": 1386.6009,
+        "year": 2020,
+        "directSourceUrl": "https://stats.tj.gov.cn/tjsj_52032/tjgb/202105/t20210521_5457266.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 10,
+        "rawUrbanPopulation10k": 1160.07,
+        "rawTemporaryPopulation10k": 0,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 1264.46
+        },
+        "rawBuiltAreaKm2": 1264.46,
+        "computedUrbanPopulation10k": 1160.07,
+        "computedBuiltAreaKm2": 1264.46,
+        "expectedUrbanPopulation10k": 1160.07,
+        "expectedBuiltAreaKm2": 1264.46,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "合肥",
+      "population": {
+        "expectedValue10k": 936.9881,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.wuhu.gov.cn/tjxx/tjfx/8282011.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 253,
+        "rawUrbanPopulation10k": 318.68,
+        "rawTemporaryPopulation10k": 331.72,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 506.6
+        },
+        "rawBuiltAreaKm2": 506.6,
+        "computedUrbanPopulation10k": 650.4,
+        "computedBuiltAreaKm2": 506.6,
+        "expectedUrbanPopulation10k": 650.4,
+        "expectedBuiltAreaKm2": 506.6,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "青岛",
+      "population": {
+        "expectedValue10k": 1007.1722,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.shandong.gov.cn/art/2021/5/21/art_6293_10287511.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 325,
+        "rawUrbanPopulation10k": 456.1,
+        "rawTemporaryPopulation10k": 127.81,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 761.52
+        },
+        "rawBuiltAreaKm2": 761.52,
+        "computedUrbanPopulation10k": 583.91,
+        "computedBuiltAreaKm2": 761.52,
+        "expectedUrbanPopulation10k": 583.91,
+        "expectedBuiltAreaKm2": 761.52,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "东莞",
+      "population": {
+        "expectedValue10k": 1046.6625,
+        "year": 2020,
+        "directSourceUrl": "https://stats.gd.gov.cn/attachment/0/421/421309/3283428.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 513,
+        "rawUrbanPopulation10k": 1082.44,
+        "rawTemporaryPopulation10k": 0,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 1194.31
+        },
+        "rawBuiltAreaKm2": 1194.31,
+        "computedUrbanPopulation10k": 1082.44,
+        "computedBuiltAreaKm2": 1194.31,
+        "expectedUrbanPopulation10k": 1082.44,
+        "expectedBuiltAreaKm2": 1194.31,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "宁波",
+      "population": {
+        "expectedValue10k": 940.4283,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 223,
+        "rawUrbanPopulation10k": 224.72,
+        "rawTemporaryPopulation10k": 143,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 397.4
+        },
+        "rawBuiltAreaKm2": 397.4,
+        "computedUrbanPopulation10k": 367.72,
+        "computedBuiltAreaKm2": 397.4,
+        "expectedUrbanPopulation10k": 367.72,
+        "expectedBuiltAreaKm2": 397.4,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "佛山",
+      "population": {
+        "expectedValue10k": 949.8863,
+        "year": 2020,
+        "directSourceUrl": "https://stats.gd.gov.cn/attachment/0/421/421309/3283428.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 486,
+        "rawUrbanPopulation10k": 148.44,
+        "rawTemporaryPopulation10k": 51.86,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 163.82
+        },
+        "rawBuiltAreaKm2": 163.82,
+        "computedUrbanPopulation10k": 200.3,
+        "computedBuiltAreaKm2": 163.82,
+        "expectedUrbanPopulation10k": 200.3,
+        "expectedBuiltAreaKm2": 163.82,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "济南",
+      "population": {
+        "expectedValue10k": 920.2432,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.shandong.gov.cn/art/2021/5/21/art_6293_10287511.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 324,
+        "rawUrbanPopulation10k": 471.94,
+        "rawTemporaryPopulation10k": 190.86,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 805.82
+        },
+        "rawBuiltAreaKm2": 805.82,
+        "computedUrbanPopulation10k": 662.8,
+        "computedBuiltAreaKm2": 805.82,
+        "expectedUrbanPopulation10k": 662.8,
+        "expectedBuiltAreaKm2": 805.82,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "无锡",
+      "population": {
+        "expectedValue10k": 746.2135,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 187,
+        "rawUrbanPopulation10k": 249.96,
+        "rawTemporaryPopulation10k": 43.39,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 359.72
+        },
+        "rawBuiltAreaKm2": 359.72,
+        "computedUrbanPopulation10k": 293.35,
+        "computedBuiltAreaKm2": 359.72,
+        "expectedUrbanPopulation10k": 293.35,
+        "expectedBuiltAreaKm2": 359.72,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "沈阳",
+      "population": {
+        "expectedValue10k": 902.7781,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.ln.gov.cn/tjj/gb/tjsj/tjgb/rkpcgb/2023110818030081821/index.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 89,
+        "rawUrbanPopulation10k": 475,
+        "rawTemporaryPopulation10k": 125,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 573
+        },
+        "rawBuiltAreaKm2": 573,
+        "computedUrbanPopulation10k": 600,
+        "computedBuiltAreaKm2": 573,
+        "expectedUrbanPopulation10k": 600,
+        "expectedBuiltAreaKm2": 573,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "昆明",
+      "population": {
+        "expectedValue10k": 846.0088,
+        "year": 2020,
+        "directSourceUrl": "https://stats.yn.gov.cn/zwgk/zfxxgk/fdzdgknr/tjsj/sjjd/202105/t20210517_1204476.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 612,
+        "rawUrbanPopulation10k": 466.45,
+        "rawTemporaryPopulation10k": 1.07,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 483.27
+        },
+        "rawBuiltAreaKm2": 483.27,
+        "computedUrbanPopulation10k": 467.52,
+        "computedBuiltAreaKm2": 483.27,
+        "expectedUrbanPopulation10k": 467.52,
+        "expectedBuiltAreaKm2": 483.27,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "福州",
+      "population": {
+        "expectedValue10k": 829.1268,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.fujian.gov.cn/xxgk/tjgb/202105/t20210520_5598804.htm"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 279,
+        "rawUrbanPopulation10k": 250.7,
+        "rawTemporaryPopulation10k": 149.16,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 410.02
+        },
+        "rawBuiltAreaKm2": 410.02,
+        "computedUrbanPopulation10k": 399.86,
+        "computedBuiltAreaKm2": 410.02,
+        "expectedUrbanPopulation10k": 399.86,
+        "expectedBuiltAreaKm2": 410.02,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "厦门",
+      "population": {
+        "expectedValue10k": 516.397,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.fujian.gov.cn/xxgk/tjgb/202105/t20210520_5598804.htm"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 281,
+        "rawUrbanPopulation10k": 257.3,
+        "rawTemporaryPopulation10k": 153.5,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 464.77
+        },
+        "rawBuiltAreaKm2": 464.77,
+        "computedUrbanPopulation10k": 410.8,
+        "computedBuiltAreaKm2": 464.77,
+        "expectedUrbanPopulation10k": 410.8,
+        "expectedBuiltAreaKm2": 464.77,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "温州",
+      "population": {
+        "expectedValue10k": 957.2903,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 226,
+        "rawUrbanPopulation10k": 159.9,
+        "rawTemporaryPopulation10k": 102.46,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 283.21
+        },
+        "rawBuiltAreaKm2": 283.21,
+        "computedUrbanPopulation10k": 262.36,
+        "computedBuiltAreaKm2": 283.21,
+        "expectedUrbanPopulation10k": 262.36,
+        "expectedBuiltAreaKm2": 283.21,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "石家庄",
+      "population": {
+        "expectedValue10k": 1123.5086,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.sjz.gov.cn/columns/940d701f-5e56-4f5d-9ece-7968f6354993/202105/31/d72c2a6d-f9f9-486d-b378-f566b9c7ed21.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 12,
+        "rawUrbanPopulation10k": 349.41,
+        "rawTemporaryPopulation10k": 5.44,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 334.52
+        },
+        "rawBuiltAreaKm2": 334.52,
+        "computedUrbanPopulation10k": 354.85,
+        "computedBuiltAreaKm2": 334.52,
+        "expectedUrbanPopulation10k": 354.85,
+        "expectedBuiltAreaKm2": 334.52,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "大连",
+      "population": {
+        "expectedValue10k": 745.0785,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.ln.gov.cn/tjj/gb/tjsj/tjgb/rkpcgb/2023110818030081821/index.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 91,
+        "rawUrbanPopulation10k": 361.6,
+        "rawTemporaryPopulation10k": 32.1,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 444.04
+        },
+        "rawBuiltAreaKm2": 444.04,
+        "computedUrbanPopulation10k": 393.7,
+        "computedBuiltAreaKm2": 444.04,
+        "expectedUrbanPopulation10k": 393.7,
+        "expectedBuiltAreaKm2": 444.04,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "哈尔滨",
+      "population": {
+        "expectedValue10k": 1000.9854,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.hlj.gov.cn/tjj/c106780/202105/c00_30325030.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 151,
+        "rawUrbanPopulation10k": 399.89,
+        "rawTemporaryPopulation10k": 98.87,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 500.44
+        },
+        "rawBuiltAreaKm2": 500.44,
+        "computedUrbanPopulation10k": 498.76,
+        "computedBuiltAreaKm2": 500.44,
+        "expectedUrbanPopulation10k": 498.76,
+        "expectedBuiltAreaKm2": 500.44,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "金华",
+      "population": {
+        "expectedValue10k": 705.0683,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 238,
+        "rawUrbanPopulation10k": 60.19,
+        "rawTemporaryPopulation10k": 40.56,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 115.93
+        },
+        "rawBuiltAreaKm2": 115.93,
+        "computedUrbanPopulation10k": 100.75,
+        "computedBuiltAreaKm2": 115.93,
+        "expectedUrbanPopulation10k": 100.75,
+        "expectedBuiltAreaKm2": 115.93,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "泉州",
+      "population": {
+        "expectedValue10k": 878.2285,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.fujian.gov.cn/xxgk/tjgb/202105/t20210520_5598804.htm"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 285,
+        "rawUrbanPopulation10k": 135.16,
+        "rawTemporaryPopulation10k": null,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 230
+        },
+        "rawBuiltAreaKm2": 230,
+        "computedUrbanPopulation10k": 135.16,
+        "computedBuiltAreaKm2": 230,
+        "expectedUrbanPopulation10k": 135.16,
+        "expectedBuiltAreaKm2": 230,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "南宁",
+      "population": {
+        "expectedValue10k": 874.1584,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.gxzf.gov.cn/syyw/t8851196.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 521,
+        "rawUrbanPopulation10k": 265.8,
+        "rawTemporaryPopulation10k": 154.94,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 442.52
+        },
+        "rawBuiltAreaKm2": 442.52,
+        "computedUrbanPopulation10k": 420.74,
+        "computedBuiltAreaKm2": 442.52,
+        "expectedUrbanPopulation10k": 420.74,
+        "expectedBuiltAreaKm2": 442.52,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "长春",
+      "population": {
+        "expectedValue10k": 906.6906,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.jl.gov.cn/tjsj/qwfb/202105/t20210524_8079098.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 121,
+        "rawUrbanPopulation10k": 357.53,
+        "rawTemporaryPopulation10k": 123.89,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 551.38
+        },
+        "rawBuiltAreaKm2": 551.38,
+        "computedUrbanPopulation10k": 481.42,
+        "computedBuiltAreaKm2": 551.38,
+        "expectedUrbanPopulation10k": 481.42,
+        "expectedBuiltAreaKm2": 551.38,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "常州",
+      "population": {
+        "expectedValue10k": 527.8121,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 193,
+        "rawUrbanPopulation10k": 184.78,
+        "rawTemporaryPopulation10k": 30.16,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 278.74
+        },
+        "rawBuiltAreaKm2": 278.74,
+        "computedUrbanPopulation10k": 214.94,
+        "computedBuiltAreaKm2": 278.74,
+        "expectedUrbanPopulation10k": 214.94,
+        "expectedBuiltAreaKm2": 278.74,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "南昌",
+      "population": {
+        "expectedValue10k": 625.5007,
+        "year": 2020,
+        "directSourceUrl": "https://nchdz.nc.gov.cn/ncgxq/mtbd/202106/675f33a5cdfa4f8982f68e370716aa24.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 300,
+        "rawUrbanPopulation10k": 291.97,
+        "rawTemporaryPopulation10k": 40.4,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 376.74
+        },
+        "rawBuiltAreaKm2": 376.74,
+        "computedUrbanPopulation10k": 332.37,
+        "computedBuiltAreaKm2": 376.74,
+        "expectedUrbanPopulation10k": 332.37,
+        "expectedBuiltAreaKm2": 376.74,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "南通",
+      "population": {
+        "expectedValue10k": 772.6635,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 200,
+        "rawUrbanPopulation10k": 149.92,
+        "rawTemporaryPopulation10k": 71.03,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 304.02
+        },
+        "rawBuiltAreaKm2": 304.02,
+        "computedUrbanPopulation10k": 220.95,
+        "computedBuiltAreaKm2": 304.02,
+        "expectedUrbanPopulation10k": 220.95,
+        "expectedBuiltAreaKm2": 304.02,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "贵阳",
+      "population": {
+        "expectedValue10k": 598.7018,
+        "year": 2020,
+        "directSourceUrl": "https://stjj.guizhou.gov.cn/tjsj/tjfbyjd/202109/t20210930_86400085.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 595,
+        "rawUrbanPopulation10k": 219.5,
+        "rawTemporaryPopulation10k": 78,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 369
+        },
+        "rawBuiltAreaKm2": 369,
+        "computedUrbanPopulation10k": 297.5,
+        "computedBuiltAreaKm2": 369,
+        "expectedUrbanPopulation10k": 297.5,
+        "expectedBuiltAreaKm2": 369,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "嘉兴",
+      "population": {
+        "expectedValue10k": 540.0868,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 230,
+        "rawUrbanPopulation10k": 54.97,
+        "rawTemporaryPopulation10k": 38.61,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 165.57
+        },
+        "rawBuiltAreaKm2": 165.57,
+        "computedUrbanPopulation10k": 93.58,
+        "computedBuiltAreaKm2": 165.57,
+        "expectedUrbanPopulation10k": 93.58,
+        "expectedBuiltAreaKm2": 165.57,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "徐州",
+      "population": {
+        "expectedValue10k": 908.379,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 190,
+        "rawUrbanPopulation10k": 197.48,
+        "rawTemporaryPopulation10k": 14.53,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 292.98
+        },
+        "rawBuiltAreaKm2": 292.98,
+        "computedUrbanPopulation10k": 212.01,
+        "computedBuiltAreaKm2": 292.98,
+        "expectedUrbanPopulation10k": 212.01,
+        "expectedBuiltAreaKm2": 292.98,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "惠州",
+      "population": {
+        "expectedValue10k": 604.2852,
+        "year": 2020,
+        "directSourceUrl": "https://stats.gd.gov.cn/attachment/0/421/421309/3283428.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 502,
+        "rawUrbanPopulation10k": 140.27,
+        "rawTemporaryPopulation10k": 122.41,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 313.61
+        },
+        "rawBuiltAreaKm2": 313.61,
+        "computedUrbanPopulation10k": 262.68,
+        "computedBuiltAreaKm2": 313.61,
+        "expectedUrbanPopulation10k": 262.68,
+        "expectedBuiltAreaKm2": 313.61,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "太原",
+      "population": {
+        "expectedValue10k": 530.4061,
+        "year": 2020,
+        "directSourceUrl": "https://www.taiyuan.gov.cn/doc/2021/06/01/1096237.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 45,
+        "rawUrbanPopulation10k": 315.2,
+        "rawTemporaryPopulation10k": 89.8,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 360
+        },
+        "rawBuiltAreaKm2": 360,
+        "computedUrbanPopulation10k": 405,
+        "computedBuiltAreaKm2": 360,
+        "expectedUrbanPopulation10k": 405,
+        "expectedBuiltAreaKm2": 360,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "烟台",
+      "population": {
+        "expectedValue10k": 710.2116,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.shandong.gov.cn/art/2021/5/21/art_6293_10287511.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 333,
+        "rawUrbanPopulation10k": 187.57,
+        "rawTemporaryPopulation10k": 65.82,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 397.7
+        },
+        "rawBuiltAreaKm2": 397.7,
+        "computedUrbanPopulation10k": 253.39,
+        "computedBuiltAreaKm2": 397.7,
+        "expectedUrbanPopulation10k": 253.39,
+        "expectedBuiltAreaKm2": 397.7,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "临沂",
+      "population": {
+        "expectedValue10k": 1101.8365,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.shandong.gov.cn/art/2021/5/21/art_6293_10287511.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 357,
+        "rawUrbanPopulation10k": 187.06,
+        "rawTemporaryPopulation10k": 35.48,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 264.85
+        },
+        "rawBuiltAreaKm2": 264.85,
+        "computedUrbanPopulation10k": 222.54,
+        "computedBuiltAreaKm2": 264.85,
+        "expectedUrbanPopulation10k": 222.54,
+        "expectedBuiltAreaKm2": 264.85,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "保定",
+      "population": {
+        "expectedValue10k": 924.261,
+        "year": 2020,
+        "directSourceUrl": "https://www.baoding.gov.cn/content-173-312950.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 25,
+        "rawUrbanPopulation10k": 146.04,
+        "rawTemporaryPopulation10k": 51.31,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 209.78
+        },
+        "rawBuiltAreaKm2": 209.78,
+        "computedUrbanPopulation10k": 197.35,
+        "computedBuiltAreaKm2": 209.78,
+        "expectedUrbanPopulation10k": 197.35,
+        "expectedBuiltAreaKm2": 209.78,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "台州",
+      "population": {
+        "expectedValue10k": 662.2888,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 246,
+        "rawUrbanPopulation10k": 116.01,
+        "rawTemporaryPopulation10k": 21.35,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 159.5
+        },
+        "rawBuiltAreaKm2": 159.5,
+        "computedUrbanPopulation10k": 137.36,
+        "computedBuiltAreaKm2": 159.5,
+        "expectedUrbanPopulation10k": 137.36,
+        "expectedBuiltAreaKm2": 159.5,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "绍兴",
+      "population": {
+        "expectedValue10k": 527.0977,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 235,
+        "rawUrbanPopulation10k": 109.55,
+        "rawTemporaryPopulation10k": 56.82,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 266.07
+        },
+        "rawBuiltAreaKm2": 266.07,
+        "computedUrbanPopulation10k": 166.37,
+        "computedBuiltAreaKm2": 266.07,
+        "expectedUrbanPopulation10k": 166.37,
+        "expectedBuiltAreaKm2": 266.07,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "珠海",
+      "population": {
+        "expectedValue10k": 243.9585,
+        "year": 2020,
+        "directSourceUrl": "https://stats.gd.gov.cn/attachment/0/421/421309/3283428.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 484,
+        "rawUrbanPopulation10k": 202.49,
+        "rawTemporaryPopulation10k": null,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 152.85
+        },
+        "rawBuiltAreaKm2": 152.85,
+        "computedUrbanPopulation10k": 202.49,
+        "computedBuiltAreaKm2": 152.85,
+        "expectedUrbanPopulation10k": 202.49,
+        "expectedBuiltAreaKm2": 152.85,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "洛阳",
+      "population": {
+        "expectedValue10k": 705.6699,
+        "year": 2020,
+        "directSourceUrl": "https://lyrb.lyd.com.cn/images2/1/2021-05/21/010/20210521010_pdf.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 374,
+        "rawUrbanPopulation10k": 243.29,
+        "rawTemporaryPopulation10k": 37.63,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 294.57
+        },
+        "rawBuiltAreaKm2": 294.57,
+        "computedUrbanPopulation10k": 280.92,
+        "computedBuiltAreaKm2": 294.57,
+        "expectedUrbanPopulation10k": 280.92,
+        "expectedBuiltAreaKm2": 294.57,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "潍坊",
+      "population": {
+        "expectedValue10k": 938.6705,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.shandong.gov.cn/art/2021/5/21/art_6293_10287511.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 340,
+        "rawUrbanPopulation10k": 160.86,
+        "rawTemporaryPopulation10k": 40,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 199
+        },
+        "rawBuiltAreaKm2": 199,
+        "computedUrbanPopulation10k": 200.86,
+        "computedBuiltAreaKm2": 199,
+        "expectedUrbanPopulation10k": 200.86,
+        "expectedBuiltAreaKm2": 199,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "海口",
+      "population": {
+        "expectedValue10k": 287.3358,
+        "year": 2020,
+        "directSourceUrl": "https://news.hndaily.cn/resfile/2021-05-14/008/hnrb20210514008.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 546,
+        "rawUrbanPopulation10k": 131,
+        "rawTemporaryPopulation10k": 78.92,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 215.8
+        },
+        "rawBuiltAreaKm2": 215.8,
+        "computedUrbanPopulation10k": 209.92,
+        "computedBuiltAreaKm2": 215.8,
+        "expectedUrbanPopulation10k": 209.92,
+        "expectedBuiltAreaKm2": 215.8,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "湖州",
+      "population": {
+        "expectedValue10k": 336.7579,
+        "year": 2020,
+        "directSourceUrl": "https://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3077/site/flash/tjj/Reports1/%E6%B5%99%E6%B1%9F%E4%BA%BA%E6%99%AE2020%E5%85%89%E7%9B%98/zk/html/fu04.pdf"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 234,
+        "rawUrbanPopulation10k": 48.31,
+        "rawTemporaryPopulation10k": 51.41,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 134.92
+        },
+        "rawBuiltAreaKm2": 134.92,
+        "computedUrbanPopulation10k": 99.72,
+        "computedBuiltAreaKm2": 134.92,
+        "expectedUrbanPopulation10k": 99.72,
+        "expectedBuiltAreaKm2": 134.92,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "芜湖",
+      "population": {
+        "expectedValue10k": 364.442,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.wuhu.gov.cn/tjxx/tjgb/8282562.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 255,
+        "rawUrbanPopulation10k": 140.18,
+        "rawTemporaryPopulation10k": 49.5,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 265.08
+        },
+        "rawBuiltAreaKm2": 265.08,
+        "computedUrbanPopulation10k": 189.68,
+        "computedBuiltAreaKm2": 265.08,
+        "expectedUrbanPopulation10k": 189.68,
+        "expectedBuiltAreaKm2": 265.08,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "阜阳",
+      "population": {
+        "expectedValue10k": 820.0264,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.wuhu.gov.cn/tjxx/tjfx/8282011.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 269,
+        "rawUrbanPopulation10k": 98.55,
+        "rawTemporaryPopulation10k": 9.1,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 156.36
+        },
+        "rawBuiltAreaKm2": 156.36,
+        "computedUrbanPopulation10k": 107.65,
+        "computedBuiltAreaKm2": 156.36,
+        "expectedUrbanPopulation10k": 107.65,
+        "expectedBuiltAreaKm2": 156.36,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "宿迁",
+      "population": {
+        "expectedValue10k": 498.6192,
+        "year": 2020,
+        "directSourceUrl": "https://www.js.gov.cn/art/2021/5/18/art_46548_206.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 219,
+        "rawUrbanPopulation10k": 95.14,
+        "rawTemporaryPopulation10k": 14.36,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 122.75
+        },
+        "rawBuiltAreaKm2": 122.75,
+        "computedUrbanPopulation10k": 109.5,
+        "computedBuiltAreaKm2": 122.75,
+        "expectedUrbanPopulation10k": 109.5,
+        "expectedBuiltAreaKm2": 122.75,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "三亚",
+      "population": {
+        "expectedValue10k": 103.1396,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.sanya.gov.cn/tjjsite/tjgb/202105/e2ae897613cb4dda896fd13de631c444.shtml"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 547,
+        "rawUrbanPopulation10k": 53.13,
+        "rawTemporaryPopulation10k": 2.87,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 59.1
+        },
+        "rawBuiltAreaKm2": 59.1,
+        "computedUrbanPopulation10k": 56,
+        "computedBuiltAreaKm2": 59.1,
+        "expectedUrbanPopulation10k": 56,
+        "expectedBuiltAreaKm2": 59.1,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    },
+    {
+      "city": "淮南",
+      "population": {
+        "expectedValue10k": 303.3528,
+        "year": 2020,
+        "directSourceUrl": "https://tjj.huainan.gov.cn/tjsj/tjgb/551571618.html"
+      },
+      "density": {
+        "sourceId": "mohurd2022CityConstruction",
+        "year": 2022,
+        "directSourceUrl": "https://www.mohurd.gov.cn/cms_files/filemanager/mohurdold/file/2023/20231011/4de09801-07f4-4273-97cb-1e1fc78704fd.xls",
+        "sheet": "2-2",
+        "officialRow": 258,
+        "rawUrbanPopulation10k": 106.36,
+        "rawTemporaryPopulation10k": 7.01,
+        "rawBuiltAreaComponentsKm2": {
+          "builtArea": 128.14
+        },
+        "rawBuiltAreaKm2": 128.14,
+        "computedUrbanPopulation10k": 113.37,
+        "computedBuiltAreaKm2": 128.14,
+        "expectedUrbanPopulation10k": 113.37,
+        "expectedBuiltAreaKm2": 128.14,
+        "missingReason": null
+      },
+      "housing": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "个",
+        "proxyMetric": null,
+        "executionStatus": null,
+        "missingReason": "No auditable, comparable official city-level annual old-community count with a consistent execution status is populated; household, area, and project units are not substituted."
+      },
+      "charging": {
+        "expectedValue": null,
+        "year": null,
+        "directSourceUrl": "",
+        "unit": "枪",
+        "geography": "市级",
+        "metric": "公共充电枪数量",
+        "missingReason": "No auditable official city-level public charging-gun count is populated; provincial counts are not substituted."
+      }
+    }
+  ]
+}

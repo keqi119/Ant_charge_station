@@ -9,6 +9,7 @@ import {
   validateCityInputs,
   validateSeasonalityInputs,
 } from "../model/input_validation.mjs";
+import * as inputValidation from "../model/input_validation.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -226,11 +227,111 @@ test("city validation requires row-level tier and rank provenance", () => {
   );
 });
 
+test("city metric audit manifest validator is part of the input contract", () => {
+  assert.equal(typeof inputValidation.validateCityMetricAuditManifest, "function");
+});
+
+test("city metric audit manifest rejects value, computation, and provenance drift", () => {
+  const cities = loadJson(join(here, "../data/city_inputs.json"));
+  const manifest = loadJson(join(here, "../data/city_metric_audit_manifest.json"));
+  assert.equal(inputValidation.validateCityMetricAuditManifest(manifest, cities).length, 56);
+
+  const wrongValue = structuredClone(manifest);
+  wrongValue.cities[0].population.expectedValue10k += 1;
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(wrongValue, cities),
+    /population manifest drift/,
+  );
+
+  const wrongRawDensity = structuredClone(manifest);
+  wrongRawDensity.cities[0].density.rawTemporaryPopulation10k = 1;
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(wrongRawDensity, cities),
+    /density computation drift/,
+  );
+
+  const swappedCityDensity = structuredClone(cities);
+  [swappedCityDensity[0].urbanPopulation10k, swappedCityDensity[2].urbanPopulation10k] =
+    [swappedCityDensity[2].urbanPopulation10k, swappedCityDensity[0].urbanPopulation10k];
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(manifest, swappedCityDensity),
+    /density manifest drift/,
+  );
+
+  const missingPopulationUrl = structuredClone(manifest);
+  missingPopulationUrl.cities[0].population.directSourceUrl = "";
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(missingPopulationUrl, cities),
+    /population manifest drift/,
+  );
+});
+
+test("audit manifest requires explicit future housing and charging semantics", () => {
+  const cities = loadJson(join(here, "../data/city_inputs.json"));
+  const manifest = loadJson(join(here, "../data/city_metric_audit_manifest.json"));
+  const enrichedCities = structuredClone(cities);
+  const enrichedManifest = structuredClone(manifest);
+  Object.assign(enrichedCities[0], {
+    pre2005HousingProxy: 123,
+    housingMetric: "年度城镇老旧小区改造小区数",
+    housingYear: 2024,
+    housingSourceUrl: "https://www.shanghai.gov.cn/housing-evidence.html",
+    publicChargingGuns: 456,
+    chargingYear: 2024,
+    chargingSourceUrl: "https://www.shanghai.gov.cn/charging-evidence.html",
+  });
+  Object.assign(enrichedManifest.cities[0].housing, {
+    expectedValue: 123,
+    year: 2024,
+    directSourceUrl: "https://www.shanghai.gov.cn/housing-evidence.html",
+    unit: "个",
+    proxyMetric: "年度城镇老旧小区改造小区数",
+    executionStatus: "完工",
+    missingReason: null,
+  });
+  Object.assign(enrichedManifest.cities[0].charging, {
+    expectedValue: 456,
+    year: 2024,
+    directSourceUrl: "https://www.shanghai.gov.cn/charging-evidence.html",
+    unit: "枪",
+    geography: "市级",
+    metric: "公共充电枪数量",
+    missingReason: null,
+  });
+  assert.equal(inputValidation.validateCityMetricAuditManifest(enrichedManifest, enrichedCities).length, 56);
+
+  const missingHousingStatus = structuredClone(enrichedManifest);
+  missingHousingStatus.cities[0].housing.executionStatus = null;
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(missingHousingStatus, enrichedCities),
+    /housing manifest semantics/,
+  );
+
+  const provincialCharging = structuredClone(enrichedManifest);
+  provincialCharging.cities[0].charging.geography = "省级";
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(provincialCharging, enrichedCities),
+    /charging manifest semantics/,
+  );
+});
+
+test("audit manifest requires explicit reasons for every null optional metric", () => {
+  const cities = loadJson(join(here, "../data/city_inputs.json"));
+  const manifest = loadJson(join(here, "../data/city_metric_audit_manifest.json"));
+  manifest.cities[0].housing.missingReason = "";
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(manifest, cities),
+    /housing missing reason/,
+  );
+});
+
 test("source-backed input files satisfy the exact roster, provenance, and coverage contract", (t) => {
   const seasonality = loadJson(join(here, "../data/seasonality_2024.json"));
   const cities = loadJson(join(here, "../data/city_inputs.json"));
+  const metricAuditManifest = loadJson(join(here, "../data/city_metric_audit_manifest.json"));
   assert.equal(validateSeasonalityInputs(seasonality).length, 13);
   assert.equal(validateCityInputs(cities, FIXED_CITIES).filter((row) => row.isFixed).length, 26);
+  assert.equal(inputValidation.validateCityMetricAuditManifest(metricAuditManifest, cities).length, 56);
 
   assert.deepEqual(
     seasonality.map((row) => [row.month, row.gunSourceUrl, row.volumeSourceUrl]),
