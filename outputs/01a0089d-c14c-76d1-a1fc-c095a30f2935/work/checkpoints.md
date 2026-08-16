@@ -20,11 +20,13 @@
 - Post-review current-HEAD pure-engine quick regression: 74/74 passed in 0.4s.
 - RED evidence for the post-commit review: the former single inspect of `36月运营模型!A1:BI35` returned only the A1 title and NDJSON `valuesTruncated:true`; the completeness assertion exited 1. Both chart gates also still used `>= 5` and failed the exact-five source assertion.
 - GREEN existing-XLSX verification: exit code 0 in 60.2s; all six key ranges were divided into 10-row by 8-column safe blocks (165 blocks total), every metadata object and NDJSON record was parsed, no block was empty or truncated, 9/9 assertions passed, the formula-error scan was clean, and the peak funding gap serial displayed as `2026-11`.
+- Final release rebuild on `3a796ef`: one loader-provided Node process with an 8,192 MB heap, `--expose-gc`, and the documented skip-trace reason completed the audited-manifest load, workbook build, all checks, 12 renders, export, and reimport in 328s. The command's truthful outer exit code was 1 solely because artifact-tool emitted its automatic `.inspect.ndjson` sidecar; the workbook and complete verification log were written successfully.
+- Current release gate: a separate import of the newly exported XLSX completed with exit code 0 in 35.1s. All 9 assertions passed, including 17/17 visible checks, overall `B19=PASS`, exactly five native charts, 165/165 complete reimport blocks, one XLSX in the output root, and a clean scan including `#NUM!`.
 
 ### Key ranges and finance checks
 
 - Inspected: `融资摘要!A1:R45`, `核心假设!A1:M65`, `历史单枪模型!A1:M80`, `36月运营模型!A1:BI35`, `融资租赁与资金缺口!A1:BI80`, and `情景分析、检查与来源!A1:I120`.
-- The finalizer now records separate `preExportKeyInspections` and `reimportKeyInspections`. Each block must return matching address, exact row/column counts, a complete values matrix, nonempty NDJSON and metadata, and no `truncated`/`valuesTruncated` flag. The post-review check reused the existing XLSX and proved all 165 reimport blocks; the full build was intentionally not rerun per review scope.
+- The finalizer records separate `preExportKeyInspections` and `reimportKeyInspections`. Each block must return matching address, exact row/column counts, a complete values matrix, nonempty NDJSON and metadata, and no `truncated`/`valuesTruncated` flag. The current release rebuild proved 165/165 pre-export blocks and 165/165 reimport blocks.
 - Pre-export audit: 46/46 PASS. Post-export reimport audit: 46/46 PASS.
 - Visible workbook checks: `情景分析、检查与来源!F22:F38` = 17/17 PASS; overall `B19` = PASS.
 - Formula-error scans before export, after reimport, and in the independent existing-file verification found none of `#REF!`, `#DIV/0!`, `#VALUE!`, `#NAME?`, `#N/A`, or `#NUM!`.
@@ -33,6 +35,8 @@
 - Trace limitation: actual `workbook.trace()` expansion was attempted on the real workbook and exhausted both 4,096 MB and 8,192 MB Node heaps after clean pre-export audits. The API exposes no node/depth cap. All three requested trace targets are therefore recorded as `UNAVAILABLE` with the observed resource failure; no trace result was fabricated.
 
 ### Visual review — 12/12 sheets
+
+- The final release generated 12 fresh previews. After the earlier 12/12 review, the current build was visually rechecked in `融资摘要`, `核心假设`, `城市分配`, `月度投放计划`, `历史单枪模型`, `融资租赁与资金缺口`, and `情景分析、检查与来源`; the new manifest and invalid-input gates caused no layout regression.
 
 - `融资摘要`: KPI block, underwriting warning, five native charts, axes, legends, and titles are readable with no overlap.
 - `核心假设`: input colors, units, 12-month rollout, and six-month ramp blocks are readable.
@@ -50,6 +54,6 @@
 ### Export evidence
 
 - Artifact-tool-only export used `SpreadsheetFile.exportXlsx(workbook)` followed by `output.save(PATHS.outputWorkbook)`.
-- Artifact tool intentionally attached a 40.9 MB full-workbook `.inspect.ndjson` sidecar during export. After confirming it contained zero formula-error tokens, the sidecar was retained as ignored evidence in `work/final-export-inspect.log`; the output directory contains exactly one `.xlsx`.
-- Final workbook: `D:/Project_Mini_Charge_Station/outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/便民充电站单枪收入与融资租赁模型.xlsx`, 912,179 bytes.
+- Artifact tool intentionally attached a 40,907,542-byte full-workbook `.inspect.ndjson` sidecar during export. It was moved to ignored evidence at `work/final-export-inspect-3a796ef.log`; the output directory contains exactly one `.xlsx`.
+- Final workbook: `D:/Project_Mini_Charge_Station/outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/便民充电站单枪收入与融资租赁模型.xlsx`, 913,706 bytes, SHA-256 `1F354802E0766EBD4E840B523294935D784DE47EF38F5A13D91F5421544D2164`.
 - Reimport preserved all 12 approved sheets in order, 17/17 checks, overall PASS, exactly five summary charts, fixed historical dates, formatted deployment headers, and clean formula scan.
