@@ -100,7 +100,7 @@ function buildCoreAssumptions(workbook, context) {
     ["新增目标枪数", BASE_ASSUMPTIONS.targetGuns, "枪"],
     ["正式报告期", BASE_ASSUMPTIONS.reportMonths, "月"],
     ["底层计算期", BASE_ASSUMPTIONS.calculationMonths, "月"],
-    ["基准投放期", BASE_ASSUMPTIONS.rolloutMonths, "月"],
+    ["上线比例为正的月份数", null, "月（由B55:M55计算）"],
     ["人口权重", 0.30, "%"],
     ["密度权重", 0.25, "%"],
     ["老旧住房权重", 0.30, "%"],
@@ -144,7 +144,10 @@ function buildCoreAssumptions(workbook, context) {
     ["模型版本日期", new Date("2026-08-16T00:00:00Z"), "日"],
   ];
   sheet.getRange("A5:C50").values = assumptions;
-  styleInput(sheet.getRange("B5:B50"));
+  sheet.getRange("B9").formulas = [['=COUNTIF(B55:M55,">0")']];
+  styleInput(sheet.getRange("B5:B8"));
+  styleFormula(sheet.getRange("B9"));
+  styleInput(sheet.getRange("B10:B50"));
   formatPercent(sheet.getRange("B10:B13"));
   formatPercent(sheet.getRange("B14:B14"));
   formatPercent(sheet.getRange("B25:B27"));
@@ -228,7 +231,7 @@ function buildHistoricalRaw(workbook, context) {
   sheet.getRange("A2:A3050").format.numberFormat = "yyyy-mm-dd";
   formatCount(sheet.getRange("D2:L3050"));
   formatFinancial(sheet.getRange("M2:O3050"));
-  sheet.getRange("A1:P3050").format.font = { color: COLORS.formula, name: "Arial" };
+  sheet.getRange("A2:P3050").format.font = { color: COLORS.formula, name: "Arial" };
   sheet.getRange("A1:A3050").format.columnWidth = 12;
   sheet.getRange("B1:B3050").format.columnWidth = 18;
   sheet.getRange("C1:C3050").format.columnWidth = 28;
@@ -372,11 +375,11 @@ function buildCityDatabase(workbook, context, sourceCatalog) {
   const sheet = workbook.worksheets.getItem("城市数据库");
   const firstRow = 6;
   const lastRow = firstRow + context.cityInputs.length - 1;
-  rangeTitle(sheet, "A1:AE1", "城市数据库｜原始指标、同等级百分位与来源审计");
-  rangeSection(sheet, "A3:AE3", "原始公开指标（黑字）与公式派生（公式黑字、跨表绿字）");
-  const headers = ["城市", "省份", "等级", "一财排名", "首批", "首批顺序", "人口(万人)", "人口年", "城区人口(万人)", "建成区(km²)", "密度年", "人口密度", "老旧住房代理", "代理口径", "住房年", "公共充电枪", "充电年", "枪/万人", "等级来源", "人口来源", "密度来源", "住房来源", "充电来源", "访问日", "备注", "人口百分位", "密度百分位", "住房百分位", "稀缺百分位", "综合得分", "数据质量"];
-  sheet.getRange("A4:AE4").values = [headers];
-  styleSection(sheet.getRange("A4:AE4"));
+  rangeTitle(sheet, "A1:AG1", "城市数据库｜原始指标、同等级百分位与来源审计");
+  rangeSection(sheet, "A3:AG3", "原始公开指标（黑字）与公式派生（公式黑字、跨表绿字）");
+  const headers = ["城市", "省份", "等级", "一财排名", "首批", "首批顺序", "人口(万人)", "人口年", "城区人口(万人)", "建成区(km²)", "密度年", "人口密度", "老旧住房代理", "代理口径", "住房年", "公共充电枪", "充电年", "枪/万人", "等级来源", "人口来源", "密度来源", "住房来源", "充电来源", "访问日", "备注", "人口百分位", "密度百分位", "住房百分位", "稀缺百分位", "综合得分", "数据质量", "等级优先级", "实时排序名次"];
+  sheet.getRange("A4:AG4").values = [headers];
+  styleSection(sheet.getRange("A4:AG4"));
   sheet.getRange(`A${firstRow}:Y${lastRow}`).values = context.cityInputs.map((city) => [
     city.city, city.province, city.tier, city.yicaiRank, city.isFixed ? "是" : "否", city.fixedOrder,
     city.population10k, city.populationYear, city.urbanPopulation10k, city.builtAreaKm2, city.densityYear, null,
@@ -398,8 +401,15 @@ function buildCityDatabase(workbook, context, sourceCatalog) {
       `=IF(L${row}="","",COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$L$${firstRow}:$L$${lastRow},"<="&L${row})/COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$L$${firstRow}:$L$${lastRow},"<>"))`,
       `=IF(M${row}="","",COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$M$${firstRow}:$M$${lastRow},"<="&M${row})/COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$M$${firstRow}:$M$${lastRow},"<>"))`,
       `=IF(R${row}="","",COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$R$${firstRow}:$R$${lastRow},">="&R${row})/COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$R$${firstRow}:$R$${lastRow},"<>"))`,
-      `=IFERROR(SUMPRODUCT(Z${row}:AC${row},'核心假设'!$B$10:$B$13)/SUMPRODUCT(--(Z${row}:AC${row}<>""),'核心假设'!$B$10:$B$13),"")`,
+      `=IFERROR((IF(Z${row}="",0,Z${row}*'核心假设'!$B$10)+IF(AA${row}="",0,AA${row}*'核心假设'!$B$11)+IF(AB${row}="",0,AB${row}*'核心假设'!$B$12)+IF(AC${row}="",0,AC${row}*'核心假设'!$B$13))/(IF(Z${row}="",0,'核心假设'!$B$10)+IF(AA${row}="",0,'核心假设'!$B$11)+IF(AB${row}="",0,'核心假设'!$B$12)+IF(AC${row}="",0,'核心假设'!$B$13)),"")`,
       `=IF(COUNT(Z${row}:AC${row})<4,"缺失重算",IF(OR(AND(I${row}="",G${row}<>""),ISNUMBER(SEARCH("代理",N${row}))),"代理","完整"))`,
+    ];
+  });
+  sheet.getRange(`AF${firstRow}:AG${lastRow}`).formulas = context.cityInputs.map((_, index) => {
+    const row = firstRow + index;
+    return [
+      `=IF(C${row}="一线",1,IF(C${row}="新一线",2,IF(C${row}="二线",3,4)))`,
+      `=IF(E${row}="是",F${row},COUNTIF($E$${firstRow}:$E$${lastRow},"是")+1+COUNTIFS($E$${firstRow}:$E$${lastRow},"否",$AF$${firstRow}:$AF$${lastRow},"<"&AF${row})+COUNTIFS($E$${firstRow}:$E$${lastRow},"否",$AF$${firstRow}:$AF$${lastRow},AF${row},$AD$${firstRow}:$AD$${lastRow},">"&AD${row})+COUNTIFS($E$${firstRow}:$E$${lastRow},"否",$AF$${firstRow}:$AF$${lastRow},AF${row},$AD$${firstRow}:$AD$${lastRow},AD${row},$D$${firstRow}:$D$${lastRow},"<"&D${row}))`,
     ];
   });
   styleFormula(sheet.getRange(`L${firstRow}:L${lastRow}`));
@@ -407,6 +417,7 @@ function buildCityDatabase(workbook, context, sourceCatalog) {
   styleFormula(sheet.getRange(`Z${firstRow}:AC${lastRow}`));
   styleCrossSheet(sheet.getRange(`AD${firstRow}:AD${lastRow}`));
   styleFormula(sheet.getRange(`AE${firstRow}:AE${lastRow}`));
+  styleFormula(sheet.getRange(`AF${firstRow}:AG${lastRow}`));
   formatCount(sheet.getRange(`D${firstRow}:K${lastRow}`));
   formatCount(sheet.getRange(`M${firstRow}:Q${lastRow}`));
   sheet.getRange(`L${firstRow}:L${lastRow}`).format.numberFormat = "0.00";
@@ -428,7 +439,7 @@ function buildCityDatabase(workbook, context, sourceCatalog) {
   sheet.getRange("S1:X70").format.columnWidth = 14;
   sheet.getRange("Y1:Y70").format.columnWidth = 42;
   sheet.getRange("Y6:Y70").format.wrapText = true;
-  sheet.getRange("Z1:AE70").format.columnWidth = 14;
+  sheet.getRange("Z1:AG70").format.columnWidth = 14;
   sheet.freezePanes.freezeRows(4);
   sheet.freezePanes.freezeColumns(3);
 }
@@ -436,14 +447,19 @@ function buildCityDatabase(workbook, context, sourceCatalog) {
 function buildCityAllocation(workbook, context) {
   const sheet = workbook.worksheets.getItem("城市分配");
   const firstRow = 6;
-  const lastRow = firstRow + context.allocations.length - 1;
-  rangeTitle(sheet, "A1:P1", "城市分配｜精确目标枪数与整数站型");
-  rangeSection(sheet, "A3:P3", "固定26城优先，其余按等级、得分与排名顺序补充");
-  sheet.getRange("A4:P4").values = [["顺序", "城市", "等级", "首批", "首批顺序", "综合得分", "可自动选择", "标准配额", "累计前值", "目标枪数", "4枪站占比", "4枪站", "2枪站", "总站数", "枪数校验", "预留月份序号"]];
-  styleSection(sheet.getRange("A4:P4"));
-  sheet.getRange(`B${firstRow}:B${lastRow}`).values = context.allocations.map((row) => [row.city]);
-  sheet.getRange(`A${firstRow}:A${lastRow}`).formulas = context.allocations.map((_, index) => [`=ROW()-${firstRow - 1}`]);
-  sheet.getRange(`C${firstRow}:J${lastRow}`).formulas = context.allocations.map((_, index) => {
+  const lastRow = firstRow + context.cityInputs.length - 1;
+  rangeTitle(sheet, "A1:S1", "城市分配｜精确目标枪数与整数站型");
+  rangeSection(sheet, "A3:S3", "固定26城优先，其余按等级、实时得分与一财排名动态补充");
+  sheet.getRange("A4:S4").values = [["顺序", "城市", "等级", "首批", "首批顺序", "综合得分", "可自动选择", "标准配额", "累计前值", "目标枪数", "4枪站占比", "4枪站", "2枪站", "总站数", "枪数校验", "预留月份序号", "同级选中得分序", "同级选中数", "同级选中得分中位数"]];
+  styleSection(sheet.getRange("A4:S4"));
+  sheet.getRange(`A${firstRow}:B${lastRow}`).formulas = context.cityInputs.map((_, index) => {
+    const row = firstRow + index;
+    return [
+      `=ROW()-${firstRow - 1}`,
+      `=INDEX('城市数据库'!$A$${firstRow}:$A$${lastRow},MATCH(A${row},'城市数据库'!$AG$${firstRow}:$AG$${lastRow},0))`,
+    ];
+  });
+  sheet.getRange(`C${firstRow}:J${lastRow}`).formulas = context.cityInputs.map((_, index) => {
     const row = firstRow + index;
     return [
       `=INDEX('城市数据库'!$C$6:$C$61,MATCH(B${row},'城市数据库'!$A$6:$A$61,0))`,
@@ -456,8 +472,11 @@ function buildCityAllocation(workbook, context) {
       `=IF(G${row}=0,0,IF(D${row}="是",H${row},MAX(0,MIN(H${row},'核心假设'!$B$6-I${row}))))`,
     ];
   });
-  sheet.getRange(`K${firstRow}:K${lastRow}`).formulas = context.allocations.map((allocation) => [allocation.fourGunSiteShare === BASE_ASSUMPTIONS.fourGunSiteShareHigh ? "='核心假设'!$B$25" : "='核心假设'!$B$26"]);
-  sheet.getRange(`L${firstRow}:P${lastRow}`).formulas = context.allocations.map((_, index) => {
+  sheet.getRange(`K${firstRow}:K${lastRow}`).formulas = context.cityInputs.map((_, index) => {
+    const row = firstRow + index;
+    return [`=IF(J${row}=0,0,IF(F${row}>=S${row},'核心假设'!$B$25,'核心假设'!$B$26))`];
+  });
+  sheet.getRange(`L${firstRow}:P${lastRow}`).formulas = context.cityInputs.map((_, index) => {
     const row = firstRow + index;
     return [
       `=ROUND((J${row}*K${row})/(2+2*K${row}),0)`,
@@ -467,18 +486,27 @@ function buildCityAllocation(workbook, context) {
       `=IF(D${row}="是",MOD(E${row}-1,6),"")`,
     ];
   });
+  sheet.getRange(`Q${firstRow}:S${lastRow}`).formulas = context.cityInputs.map((_, index) => {
+    const row = firstRow + index;
+    return [
+      `=IF(J${row}=0,"",COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$J$${firstRow}:$J$${lastRow},">0",$F$${firstRow}:$F$${lastRow},">"&F${row})+COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$J$${firstRow}:$J$${lastRow},">0",$F$${firstRow}:$F$${lastRow},F${row},$A$${firstRow}:$A$${lastRow},"<"&A${row})+1)`,
+      `=IF(J${row}=0,0,COUNTIFS($C$${firstRow}:$C$${lastRow},C${row},$J$${firstRow}:$J$${lastRow},">0"))`,
+      `=IF(J${row}=0,"",(SUMIFS($F$${firstRow}:$F$${lastRow},$C$${firstRow}:$C$${lastRow},C${row},$J$${firstRow}:$J$${lastRow},">0",$Q$${firstRow}:$Q$${lastRow},INT((R${row}+1)/2))+SUMIFS($F$${firstRow}:$F$${lastRow},$C$${firstRow}:$C$${lastRow},C${row},$J$${firstRow}:$J$${lastRow},">0",$Q$${firstRow}:$Q$${lastRow},INT((R${row}+2)/2)))/2)`,
+    ];
+  });
   styleFormula(sheet.getRange(`A${firstRow}:A${lastRow}`));
-  styleCrossSheet(sheet.getRange(`C${firstRow}:H${lastRow}`));
+  styleCrossSheet(sheet.getRange(`B${firstRow}:H${lastRow}`));
   styleFormula(sheet.getRange(`I${firstRow}:I${lastRow}`));
   styleCrossSheet(sheet.getRange(`J${firstRow}:K${lastRow}`));
-  styleFormula(sheet.getRange(`L${firstRow}:P${lastRow}`));
+  styleFormula(sheet.getRange(`L${firstRow}:S${lastRow}`));
   formatPercent(sheet.getRange(`F${firstRow}:F${lastRow}`));
   formatPercent(sheet.getRange(`K${firstRow}:K${lastRow}`));
-  formatCount(sheet.getRange(`H${firstRow}:P${lastRow}`));
+  formatCount(sheet.getRange(`H${firstRow}:R${lastRow}`));
+  formatPercent(sheet.getRange(`S${firstRow}:S${lastRow}`));
   sheet.getRange("A1:A70").format.columnWidth = 9;
   sheet.getRange("B1:B70").format.columnWidth = 13;
   sheet.getRange("C1:G70").format.columnWidth = 12;
-  sheet.getRange("H1:P70").format.columnWidth = 14;
+  sheet.getRange("H1:S70").format.columnWidth = 14;
   sheet.freezePanes.freezeRows(4);
   sheet.freezePanes.freezeColumns(2);
 }
