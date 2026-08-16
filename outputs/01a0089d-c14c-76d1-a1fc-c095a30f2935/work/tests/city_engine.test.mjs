@@ -154,6 +154,15 @@ test("allocation rejects a target above the available candidate capacity", () =>
   );
 });
 
+test("allocation keeps separate targets for duplicate city-name records", () => {
+  const allocation = allocateCityTargets([
+    scoredCity({ city: "同名", yicaiRank: 1, score: 90 }),
+    scoredCity({ city: "同名", yicaiRank: 2, score: 80 }),
+  ], { ...CONFIG, targetGuns: 1200 });
+  assert.deepEqual(allocation.map((row) => row.targetGuns), [1000, 200]);
+  assert.equal(allocation.reduce((sum, row) => sum + row.targetGuns, 0), 1200);
+});
+
 test("a 29800 target leaves 200 guns for the final supplemental city", () => {
   const allocation = allocateCityTargets(scoreCities(cityInputs, WEIGHTS), { ...CONFIG, targetGuns: 29800 });
   assert.equal(allocation.filter((row) => row.targetGuns > 0).at(-1).targetGuns, 200);
