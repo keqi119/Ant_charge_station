@@ -116,6 +116,42 @@ test("critical cost, history, city, and deployment calculations remain formulas"
   assert.match(deployment.getRange("J17").formulas[0][0], /^=4\*J16\+2\*J15-J5$/);
 });
 
+test("historical date formulas return representative station dates and blanks", async () => {
+  const context = buildFastContext();
+  for (const row of context.sourceMatrix.slice(1, 61)) row[0] = row[0].toISOString().slice(0, 10);
+  context.historical.stationProfiles.push({ stationId: "S3", stationName: "无订单站" });
+  const workbook = await buildModel({ context });
+  const history = workbook.worksheets.getItem("历史单枪模型");
+  const raw = workbook.worksheets.getItem("历史原始数据");
+
+  const normalizedDate = raw.getRange("Q2").values[0][0];
+  assert.equal(normalizedDate instanceof Date, true);
+  assert.equal(normalizedDate.toISOString().slice(0, 10), raw.getRange("A2").values[0][0]);
+  assert.deepEqual(history.getRange("I6:J7").values, [[46189, 46218], [46189, 46218]]);
+  assert.deepEqual(history.getRange("I8:J8").values, [["", ""]]);
+  assert.doesNotMatch(JSON.stringify(history.getRange("I6:J8").values), /#NUM!|1900-01-00/);
+  const errors = await workbook.inspect({
+    kind: "match",
+    sheetId: "历史单枪模型",
+    range: "I6:J8",
+    searchTerm: "#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A|#NUM!",
+    options: { useRegex: true, maxResults: 30 },
+    maxChars: 2000,
+  });
+  assert.doesNotMatch(errors.ndjson, /#REF!|#DIV\/0!|#VALUE!|#NAME\?|#N\/A|#NUM!/);
+});
+
+test("two-gun and four-gun month headers share the yyyy-mm format", async () => {
+  const workbook = await buildModel({ context: buildFastContext() });
+  const twoGunStyle = await workbook.inspect({ kind: "computedStyle", sheetId: "月度投放计划", range: "J4:U4", maxChars: 4000 });
+  const fourGunStyle = await workbook.inspect({ kind: "computedStyle", sheetId: "月度投放计划", range: "V4:AG4", maxChars: 4000 });
+
+  assert.match(twoGunStyle.ndjson, /yyyy-mm/i);
+  assert.match(fourGunStyle.ndjson, /yyyy-mm/i);
+  assert.match(twoGunStyle.ndjson, /008000/i);
+  assert.match(fourGunStyle.ndjson, /008000/i);
+});
+
 test("selectors, source comments, and finance color conventions are present", async () => {
   const workbook = await getRealWorkbook();
   const assumptions = workbook.worksheets.getItem("核心假设");
@@ -146,12 +182,12 @@ test("workbook formula-error scan is clean", async () => {
   const workbook = await getRealWorkbook();
   const errors = await workbook.inspect({
     kind: "match",
-    searchTerm: "#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A",
+    searchTerm: "#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A|#NUM!",
     options: { useRegex: true, maxResults: 300 },
     summary: "Task 8 formula error scan",
     maxChars: 6000,
   });
-  assert.doesNotMatch(errors.ndjson, /#REF!|#DIV\/0!|#VALUE!|#NAME\?|#N\/A/);
+  assert.doesNotMatch(errors.ndjson, /#REF!|#DIV\/0!|#VALUE!|#NAME\?|#N\/A|#NUM!/);
 });
 
 test("editing city weights reorders candidates and recalculates formula-linked J and K", async () => {
@@ -196,7 +232,7 @@ test("editing city weights reorders candidates and recalculates formula-linked J
     allocation.getRange("A6:S61").values,
     workbook.worksheets.getItem("月度投放计划").getRange("J5:AH83").values,
   ]);
-  assert.doesNotMatch(dynamicRanges, /#REF!|#DIV\/0!|#VALUE!|#NAME\?|#N\/A/);
+  assert.doesNotMatch(dynamicRanges, /#REF!|#DIV\/0!|#VALUE!|#NAME\?|#N\/A|#NUM!/);
 });
 
 test("rollout month count is a formula and the raw header keeps white bold text", async () => {

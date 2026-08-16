@@ -52,6 +52,13 @@ function monthDate(month) {
   return new Date(`${month}-01T00:00:00Z`);
 }
 
+function normalizedSourceDate(value) {
+  if (value === null || value === "") return null;
+  if (value instanceof Date) return value;
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function buildSourceCatalog(context) {
   const entries = [];
   const byUrl = new Map();
@@ -224,18 +231,22 @@ function buildStationCost(workbook) {
 function buildHistoricalRaw(workbook, context) {
   const sheet = workbook.worksheets.getItem("历史原始数据");
   sheet.getRange("A1:P3050").values = context.sourceMatrix;
-  sheet.getRange("A1:P1").format = {
+  sheet.getRange("Q1").values = [["标准化日期（辅助）"]];
+  sheet.getRange("Q2:Q3050").values = context.sourceMatrix.slice(1).map((row) => [normalizedSourceDate(row[0])]);
+  sheet.getRange("A1:Q1").format = {
     fill: "#1F4E78",
     font: { bold: true, color: "#FFFFFF", name: "Arial" },
   };
   sheet.getRange("A2:A3050").format.numberFormat = "yyyy-mm-dd";
+  sheet.getRange("Q2:Q3050").format.numberFormat = "yyyy-mm-dd";
   formatCount(sheet.getRange("D2:L3050"));
   formatFinancial(sheet.getRange("M2:O3050"));
-  sheet.getRange("A2:P3050").format.font = { color: COLORS.formula, name: "Arial" };
+  sheet.getRange("A2:Q3050").format.font = { color: COLORS.formula, name: "Arial" };
   sheet.getRange("A1:A3050").format.columnWidth = 12;
   sheet.getRange("B1:B3050").format.columnWidth = 18;
   sheet.getRange("C1:C3050").format.columnWidth = 28;
   sheet.getRange("D1:P3050").format.columnWidth = 13;
+  sheet.getRange("Q1:Q3050").format.columnWidth = 18;
   sheet.freezePanes.freezeRows(1);
   sheet.freezePanes.freezeColumns(3);
   addSourceComment(workbook, sheet, "A1", {
@@ -244,6 +255,12 @@ function buildHistoricalRaw(workbook, context) {
     url: context.sourcePath,
     notes: "Data List!A1:P3050逐值导入，未改变原始数值",
   });
+  addSourceComment(workbook, sheet, "Q1", {
+    name: "站点报表源工作簿",
+    asOf: "2026-06-16至2026-08-15",
+    url: context.sourcePath,
+    notes: "仅将A列ISO日期文本规范为Excel日期类型，供首末运营日公式聚合；A:P原值不变",
+  });
 }
 
 function buildHistoricalModel(workbook, context) {
@@ -251,6 +268,7 @@ function buildHistoricalModel(workbook, context) {
   const profiles = context.historical.stationProfiles;
   const firstRow = 6;
   const lastRow = firstRow + profiles.length - 1;
+  const sourceStationIds = "'历史原始数据'!$B$2:$B$3050";
   rangeTitle(sheet, "A1:N1", "历史单枪模型｜站级聚合与成熟站基准");
   rangeSection(sheet, "A3:J3", "站级可审计计算");
   sheet.getRange("A4:J4").values = [["站点ID", "站点名称", "枪数", "有效日", "枪日", "服务费", "服务费/枪日", "成熟标志", "首个运营日", "末个运营日"]];
@@ -265,8 +283,8 @@ function buildHistoricalModel(workbook, context) {
       `=SUMIFS('历史原始数据'!$O$2:$O$3050,'历史原始数据'!$B$2:$B$3050,$A${row})`,
       `=IFERROR(F${row}/E${row},0)`,
       `=IF(D${row}>='核心假设'!$B$40,1,0)`,
-      `=MINIFS('历史原始数据'!$A$2:$A$3050,'历史原始数据'!$B$2:$B$3050,$A${row})`,
-      `=MAXIFS('历史原始数据'!$A$2:$A$3050,'历史原始数据'!$B$2:$B$3050,$A${row})`,
+      `=IF(D${row}=0,"",MINIFS('历史原始数据'!$Q$2:$Q$3050,${sourceStationIds},$A${row}))`,
+      `=IF(D${row}=0,"",MAXIFS('历史原始数据'!$Q$2:$Q$3050,${sourceStationIds},$A${row}))`,
     ];
   });
   sheet.getRange(`C${firstRow}:J${lastRow}`).formulas = formulas;
@@ -603,6 +621,8 @@ function buildMonthlyDeployment(workbook, context) {
     });
     sheet.getRange(`${fourCol}4:${fourCol}4`).formulas = [[`=${monthCol}4`]];
   }
+  styleCrossSheet(sheet.getRange(`${fourStartCol}4:${fourEndCol}4`));
+  sheet.getRange(`${fourStartCol}4:${fourEndCol}4`).format.numberFormat = "yyyy-mm";
   sheet.getRange(`${checkCol}${firstCityRow}:${checkCol}${lastCityRow}`).formulas = context.allocations.map((_, index) => {
     const row = firstCityRow + index;
     return [`=2*SUM(${twoStartCol}${row}:${twoEndCol}${row})+4*SUM(${fourStartCol}${row}:${fourEndCol}${row})-INDEX('城市分配'!$J$6:$J$61,MATCH($A${row},'城市分配'!$B$6:$B$61,0))`];
