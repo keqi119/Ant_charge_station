@@ -30,6 +30,7 @@ const BASE_CONFIG = Object.freeze({
   totalGuns: 30000,
   supplierTermsMonths: 2,
   financeDelayMonths: 1,
+  expectedFixedCities: FIXED_CITIES,
 });
 
 test("base rollout is exact and fixed cities launch in first six months", () => {
@@ -123,4 +124,95 @@ test("the actual slow plan flows through 60 months with no deployment omissions"
   assert.ok(operations.monthly.slice(18).every((month) => month.newGuns === 0));
   assert.equal(operations.monthly.at(-1).operatingGuns, 30000);
   assert.equal(operations.monthly.at(-1).weightedRamp, 1);
+});
+
+test("rollout rejects construction after month 18 and requires a positive final month", () => {
+  const fixture = [{
+    city: "测试城",
+    isFixed: false,
+    fixedOrder: null,
+    twoGunSites: 0,
+    fourGunSites: 1,
+    targetGuns: 4,
+  }];
+  assert.throws(
+    () => buildDeploymentPlan(fixture, {
+      startMonth: "2026-09",
+      shares: [...Array(18).fill(0), 1],
+      totalGuns: 4,
+      supplierTermsMonths: 2,
+      financeDelayMonths: 1,
+    }),
+    /18|rollout|construction/i,
+  );
+  assert.throws(
+    () => buildDeploymentPlan(fixture, {
+      startMonth: "2026-09",
+      shares: [1, 0],
+      totalGuns: 4,
+      supplierTermsMonths: 2,
+      financeDelayMonths: 1,
+    }),
+    /final|last|positive/i,
+  );
+});
+
+test("finance delay accepts only online month through two months later", () => {
+  const fixture = [{
+    city: "测试城",
+    isFixed: false,
+    fixedOrder: null,
+    twoGunSites: 0,
+    fourGunSites: 1,
+    targetGuns: 4,
+  }];
+  const config = {
+    startMonth: "2026-09",
+    shares: [1],
+    totalGuns: 4,
+    supplierTermsMonths: 2,
+  };
+  assert.deepEqual(
+    [0, 1, 2].map((financeDelayMonths) => (
+      buildDeploymentPlan(fixture, { ...config, financeDelayMonths }).cohorts[0].financeDisbursementMonth
+    )),
+    ["2026-09", "2026-10", "2026-11"],
+  );
+  for (const financeDelayMonths of [-1, 1.5, 3]) {
+    assert.throws(
+      () => buildDeploymentPlan(fixture, { ...config, financeDelayMonths }),
+      /financeDelayMonths|finance delay/i,
+    );
+  }
+});
+
+test("fixed cities cannot have zero sites and an expected roster must be exact", () => {
+  const zeroFixed = {
+    city: "固定零站",
+    isFixed: true,
+    fixedOrder: 1,
+    twoGunSites: 0,
+    fourGunSites: 0,
+    targetGuns: 0,
+  };
+  const active = {
+    city: "活动城",
+    isFixed: false,
+    fixedOrder: null,
+    twoGunSites: 0,
+    fourGunSites: 1,
+    targetGuns: 4,
+  };
+  const config = {
+    startMonth: "2026-09",
+    shares: [1],
+    totalGuns: 4,
+    supplierTermsMonths: 2,
+    financeDelayMonths: 1,
+  };
+  assert.throws(() => buildDeploymentPlan([zeroFixed, active], config), /fixed.*site|site.*fixed/i);
+  assert.throws(
+    () => buildDeploymentPlan([active], { ...config, expectedFixedCities: ["活动城"] }),
+    /expected fixed|fixed.*roster/i,
+  );
 });

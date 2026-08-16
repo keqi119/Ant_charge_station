@@ -146,3 +146,28 @@ test("cohort station and gun counts must describe whole two- or four-gun sites",
     /station|gun/i,
   );
 });
+
+test("operations rejects cohorts first coming online in month 37 or later", () => {
+  assert.throws(
+    () => projectOperations([
+      { cohortId: "late", city: "测试城", onlineMonth: "2030-01", stations: 1, guns: 2 },
+    ], baseConfig({
+      startMonth: "2027-01",
+      horizonMonths: 60,
+      seasonalityByMonth: ALL_MONTHS_FLAT,
+    })),
+    /36|online|deployment/i,
+  );
+});
+
+test("seasonality keys must be unique integer calendar months from 1 through 12", () => {
+  for (const seasonalityByMonth of [
+    { 1: 0.8, "01": 0.9 },
+    { 1: 0.8, 13: 1 },
+  ]) {
+    assert.throws(
+      () => projectOperations([], baseConfig({ seasonalityByMonth })),
+      /seasonality.*month|duplicate|1.*12/i,
+    );
+  }
+});

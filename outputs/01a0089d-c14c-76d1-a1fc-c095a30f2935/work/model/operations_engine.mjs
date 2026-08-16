@@ -41,11 +41,20 @@ function buildSeasonalityMap(input) {
     for (const [index, value] of input.entries()) {
       const month = typeof value === "object" ? value?.monthNumber : index + 1;
       const factor = typeof value === "object" ? value?.index : value;
+      if (!Number.isInteger(month) || month < 1 || month > 12) {
+        throw new RangeError("seasonality month must be an integer from 1 through 12");
+      }
+      if (map.has(month)) throw new Error(`duplicate seasonality month ${month}`);
       map.set(month, requireFinite(factor, `seasonality for month ${month}`, { positive: true }));
     }
   } else if (input && typeof input === "object") {
     for (const [month, factor] of Object.entries(input)) {
-      map.set(Number(month), requireFinite(factor, `seasonality for month ${month}`, { positive: true }));
+      const monthNumberValue = Number(month);
+      if (!Number.isInteger(monthNumberValue) || monthNumberValue < 1 || monthNumberValue > 12) {
+        throw new RangeError("seasonality month must be an integer from 1 through 12");
+      }
+      if (map.has(monthNumberValue)) throw new Error(`duplicate seasonality month ${monthNumberValue}`);
+      map.set(monthNumberValue, requireFinite(factor, `seasonality for month ${month}`, { positive: true }));
     }
   } else {
     throw new TypeError("seasonalityByMonth must be an object or array");
@@ -82,6 +91,9 @@ export function projectOperations(cohorts, config) {
   const normalizedCohorts = cohorts.map((cohort, index) => {
     if (!cohort || typeof cohort !== "object") throw new TypeError(`cohort ${index + 1} must be an object`);
     const onlineMonthIndex = requireMonth(cohort.onlineMonth, `cohort ${index + 1} onlineMonth`);
+    if (onlineMonthIndex - startMonthIndex >= 36) {
+      throw new RangeError(`cohort ${index + 1} cannot first come online in month 37 or later`);
+    }
     if (!Number.isInteger(cohort.guns) || cohort.guns < 0) throw new TypeError(`cohort ${index + 1} guns must be a non-negative integer`);
     if (!Number.isInteger(cohort.stations) || cohort.stations < 0) {
       throw new TypeError(`cohort ${index + 1} stations must be a non-negative integer`);

@@ -31,9 +31,11 @@ function requireCost(cost, label) {
 
 function monthlyTargets(totalGuns, shares) {
   if (!Array.isArray(shares) || shares.length === 0) throw new TypeError("shares must be a non-empty array");
+  if (shares.length > 18) throw new RangeError("rollout construction cannot exceed 18 months");
   if (shares.some((share) => typeof share !== "number" || !Number.isFinite(share) || share < 0)) {
     throw new TypeError("shares must contain non-negative finite numbers");
   }
+  if (shares.at(-1) <= 0) throw new RangeError("final rollout month must have a positive share");
   const shareTotal = shares.reduce((sum, share) => sum + share, 0);
   if (Math.abs(shareTotal - 1) > 1e-9) throw new Error("shares must sum to 100%");
 
@@ -58,6 +60,7 @@ export function buildDeploymentPlan(allocations, config) {
   if (totalGuns % 2 !== 0) throw new Error("totalGuns must be even");
   const supplierTermsMonths = requireNonNegativeInteger(config.supplierTermsMonths, "supplierTermsMonths");
   const financeDelayMonths = requireNonNegativeInteger(config.financeDelayMonths, "financeDelayMonths");
+  if (financeDelayMonths > 2) throw new RangeError("financeDelayMonths must be 0, 1, or 2");
   const targets = monthlyTargets(totalGuns, config.shares);
   const costByStationType = config.costByStationType ?? BASE_ASSUMPTIONS.costByStationType;
   const twoGunCost = requireCost(costByStationType?.twoGun, "two-gun station");
@@ -73,6 +76,7 @@ export function buildDeploymentPlan(allocations, config) {
     if (allocation.targetGuns !== undefined && allocation.targetGuns !== guns) {
       throw new Error(`${allocation.city} station mix does not match targetGuns`);
     }
+    if (allocation.isFixed && guns === 0) throw new Error(`${allocation.city} fixed city must have at least one site`);
     if (allocation.isFixed && guns > 0 && (!Number.isInteger(allocation.fixedOrder) || allocation.fixedOrder < 1)) {
       throw new Error(`${allocation.city} fixedOrder must be a positive integer`);
     }
@@ -91,6 +95,24 @@ export function buildDeploymentPlan(allocations, config) {
     0,
   );
   if (allocationGuns !== totalGuns) throw new Error("allocation gun total must equal totalGuns");
+
+  let expectedFixedCities;
+  if (config.expectedFixedCities !== undefined) {
+    if (!Array.isArray(config.expectedFixedCities)
+      || config.expectedFixedCities.some((city) => typeof city !== "string" || city.length === 0)
+      || new Set(config.expectedFixedCities).size !== config.expectedFixedCities.length) {
+      throw new TypeError("expected fixed roster must contain unique non-empty city names");
+    }
+    expectedFixedCities = new Set(config.expectedFixedCities);
+    const actualFixedCities = states.filter((state) => state.isFixed).map((state) => state.city);
+    if (actualFixedCities.length !== expectedFixedCities.size
+      || actualFixedCities.some((city) => !expectedFixedCities.has(city))
+      || [...expectedFixedCities].some((city) => (
+        states.filter((state) => state.city === city && state.isFixed).length !== 1
+      ))) {
+      throw new Error("expected fixed roster must exactly match allocated fixed cities");
+    }
+  }
 
   const scheduledSites = targets.map(() => []);
   const fixedStates = states
@@ -219,6 +241,14 @@ export function buildDeploymentPlan(allocations, config) {
   });
   if (monthlyGuns.some((guns, index) => guns !== targets[index])) {
     throw new Error("site aggregation did not reproduce the monthly rollout targets");
+  }
+  if (expectedFixedCities) {
+    const finalRequiredLaunchMonth = formatMonth(startMonthIndex + Math.min(5, targets.length - 1));
+    for (const city of expectedFixedCities) {
+      if (firstOnlineMonthByCity[city] === undefined || firstOnlineMonthByCity[city] > finalRequiredLaunchMonth) {
+        throw new Error(`expected fixed city ${city} must launch within the first six months`);
+      }
+    }
   }
   return { cohorts, monthlyGuns, firstOnlineMonthByCity };
 }
