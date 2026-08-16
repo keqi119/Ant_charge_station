@@ -8,6 +8,7 @@ import { loadJson, validateCityInputs, validateSeasonalityInputs } from "./model
 import { buildSeasonalityCurve, annualizePeakBenchmark } from "./model/seasonality_engine.mjs";
 import { loadSourceMatrix, normalizeSourceMatrix } from "./model/source_reader.mjs";
 import { buildInputSheets, createWorkbook } from "./model/workbook_inputs.mjs";
+import { buildOutputSheets } from "./model/workbook_outputs.mjs";
 import { applyWorkbookStyles } from "./model/workbook_style.mjs";
 
 const WORK_DIR = dirname(fileURLToPath(import.meta.url));
@@ -71,9 +72,11 @@ export async function buildModel({ exportFile = false, renderPreviews = false, c
   }
   const resolvedContext = context ?? buildModelContext(sourcePath);
   const workbook = createWorkbook();
-  buildInputSheets(workbook, await resolvedContext);
+  const modelContext = await resolvedContext;
+  buildInputSheets(workbook, modelContext);
+  buildOutputSheets(workbook, modelContext);
   applyWorkbookStyles(workbook);
   return workbook;
 }
 
-export { createWorkbook, buildInputSheets, applyWorkbookStyles };
+export { createWorkbook, buildInputSheets, buildOutputSheets, applyWorkbookStyles };
