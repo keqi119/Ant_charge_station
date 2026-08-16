@@ -124,6 +124,8 @@ test("scenarios, term comparison, checks, sources, and scope notes are formula-b
   assert.deepEqual(sheet.getRange("A15:A17").values.flat(), [18, 24, 36]);
   assert.ok(sheet.getRange("I5:K10").formulas.flat().every((formula) => typeof formula === "string" && formula.startsWith("=")));
   assert.ok(sheet.getRange("B15:H17").formulas.flat().every((formula) => typeof formula === "string" && formula.startsWith("=")));
+  assert.equal(sheet.getRange("AE9").values[0][0], "供应商付款");
+  assert.match(sheet.getRange("AF9").formulas[0][0], /0-1\+'核心假设'!\$B\$31/);
   const baseInterest = workbook.worksheets.getItem("融资租赁与资金缺口").getRange("B107:BI107").values.flat().reduce((sum, value) => sum + value, 0);
   assert.ok(Math.abs(sheet.getRange("G17").values[0][0] - baseInterest) <= 0.01);
   assert.deepEqual(sheet.getRange("A21:H21").values[0], ["检查项", "实际", "预期", "差额", "容差", "状态", "修复位置", "说明"]);
@@ -132,11 +134,79 @@ test("scenarios, term comparison, checks, sources, and scope notes are formula-b
   assert.equal(sheet.getRange("B19").values[0][0], "PASS");
   assert.match(sheet.getRange("B19").formulas[0][0], /COUNTIF\(F22:F38/);
   assert.doesNotMatch(sheet.getRange("B19").formulas[0][0], /A22:H38/);
+  assert.doesNotMatch(sheet.getRange("B19").formulas[0][0], /F39/);
+  const fixedLaunchFormula = sheet.getRange("B25").formulas[0][0];
+  assert.match(fixedLaunchFormula, /'月度投放计划'!\$AI\$28:\$AI\$83/);
+  assert.doesNotMatch(fixedLaunchFormula, /'城市分配'!\$P/);
+  const launchHelper = workbook.worksheets.getItem("月度投放计划").getRange("AI28").formulas[0][0];
+  assert.match(launchHelper, /SUM\(\$J28:\$O28\)/);
+  assert.match(launchHelper, /SUM\(\$V28:\$AA28\)/);
+  assert.doesNotMatch(launchHelper, /'城市分配'!\$P/);
+  assert.equal(sheet.getRange("A38").values[0][0], "六情景峰值资金缺口非负");
+  assert.match(sheet.getRange("A39").values[0][0], /外部构建门禁/);
   assert.deepEqual(sheet.getRange("A42:I42").values[0], ["Item", "Value", "Units", "Period/As-of", "Source Type", "Source Name", "Ref", "Notes", "Accessed"]);
   const notes = sheet.getRange("A42:I180").values.flat().filter(Boolean).join(" | ");
   assert.match(notes, /2005年12月31日前住宅物业/);
   assert.match(notes, /海口/);
   assert.match(notes, /三亚/);
+
+  const crossSheetStyle = await workbook.inspect({ kind: "computedStyle", sheetId: "情景分析、检查与来源", range: "B7", maxChars: 2000 });
+  const constantStyle = await workbook.inspect({ kind: "computedStyle", sheetId: "情景分析、检查与来源", range: "C7", maxChars: 2000 });
+  assert.match(crossSheetStyle.ndjson, /008000/i);
+  assert.doesNotMatch(constantStyle.ndjson, /008000/i);
+  const comments = await workbook.inspect({ kind: "thread", sheetId: "情景分析、检查与来源", range: "C7:H10", maxChars: 6000 });
+  assert.match(comments.ndjson, /Task 9 approved scenario constant/);
+  assert.match(comments.ndjson, /2026-08-16-charge-station-financing-model-design/);
+});
+
+test("supplier terms move scenario payments and gaps with the main finance schedule", async () => {
+  const workbook = await buildModel({ context: buildFastContext() });
+  const assumptions = workbook.worksheets.getItem("核心假设");
+  const deployment = workbook.worksheets.getItem("月度投放计划");
+  const finance = workbook.worksheets.getItem("融资租赁与资金缺口");
+  const scenarios = workbook.worksheets.getItem("情景分析、检查与来源");
+
+  const reassign = (sheet, address) => {
+    const formulas = sheet.getRange(address).formulas;
+    sheet.getRange(address).formulas = formulas;
+  };
+  const nonzeroMonths = (values) => values.flatMap((value, index) => (Math.abs(Number(value) || 0) > 0.01 ? [index] : []));
+  const gaps = [];
+
+  for (const terms of [0, 2, 3]) {
+    assumptions.getRange("B31").values = [[terms]];
+    reassign(deployment, "J23:U23");
+    reassign(finance, "L5:L16");
+    reassign(finance, "B103:BI103");
+    for (const row of [9, 15, 21, 27, 33, 39]) reassign(scenarios, `AF${row}:CM${row}`);
+    for (const row of [10, 16, 22, 28, 34, 40]) reassign(scenarios, `AF${row}:CM${row}`);
+    reassign(scenarios, "K5:K10");
+
+    assert.deepEqual(
+      nonzeroMonths(scenarios.getRange("AF9:CM9").values[0]),
+      nonzeroMonths(finance.getRange("B103:BI103").values[0]),
+      `supplier payment months must agree when terms=${terms}`,
+    );
+    const gap = scenarios.getRange("K5").values[0][0];
+    assert.ok(Number.isFinite(gap) && gap >= 0);
+    gaps.push(Math.round(gap * 100) / 100);
+  }
+  assert.ok(new Set(gaps).size >= 2, `peak gap must respond to supplier terms: ${gaps.join(", ")}`);
+
+  const allocation = workbook.worksheets.getItem("城市分配");
+  const fixedByCity = new Map(allocation.getRange("B6:D61").values.map((row) => [row[0], row[2]]));
+  const monthlyCities = deployment.getRange("A28:A83").values.flat();
+  const fixedRow = monthlyCities.findIndex((city) => fixedByCity.get(city) === "是") + 28;
+  assert.ok(fixedRow >= 28);
+  deployment.getRange(`J${fixedRow}:O${fixedRow}`).values = [Array(6).fill(0)];
+  deployment.getRange(`V${fixedRow}:AA${fixedRow}`).values = [Array(6).fill(0)];
+  reassign(deployment, `AI${fixedRow}`);
+  reassign(scenarios, "B25");
+  reassign(scenarios, "D25:F25");
+  reassign(scenarios, "B19");
+  assert.equal(scenarios.getRange("B25").values[0][0], 1);
+  assert.equal(scenarios.getRange("F25").values[0][0], "FAIL");
+  assert.equal(scenarios.getRange("B19").values[0][0], "FAIL");
 });
 
 test("management summary is linked, warns on zero HQ and tax, and contains five native charts", async () => {
@@ -182,12 +252,17 @@ test("real source completes the Task 9 workbook audit", { skip: process.env.TASK
   assert.doesNotMatch(errors.ndjson, /#REF!|#DIV\/0!|#VALUE!|#NAME\?|#N\/A/);
 });
 
-test("renders a Task 9 management-summary preview", { skip: process.env.TASK9_RENDER !== "1" }, async () => {
+test("renders Task 9 review previews", { skip: process.env.TASK9_RENDER !== "1" }, async () => {
   const workbook = await getWorkbook();
-  const preview = await workbook.render({ sheetName: "融资摘要", autoCrop: "all", scale: 0.5, format: "png" });
-  const bytes = new Uint8Array(await preview.arrayBuffer());
-  const previewPath = join(tmpdir(), "task9-financing-summary.png");
-  writeFileSync(previewPath, bytes);
-  assert.ok(bytes.byteLength > 1000);
-  assert.equal(previewPath, join(tmpdir(), "task9-financing-summary.png"));
+  const previews = [
+    ["融资摘要", "A1:R66", "task9-financing-summary.png"],
+    ["情景分析、检查与来源", "A1:O40", "task9-scenario-review.png"],
+  ];
+  for (const [sheetName, range, fileName] of previews) {
+    const preview = await workbook.render({ sheetName, range, scale: 0.5, format: "png" });
+    const bytes = new Uint8Array(await preview.arrayBuffer());
+    const previewPath = join(tmpdir(), fileName);
+    writeFileSync(previewPath, bytes);
+    assert.ok(bytes.byteLength > 1000);
+  }
 });

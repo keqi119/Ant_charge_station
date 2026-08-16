@@ -15,6 +15,7 @@ const REPORT_MONTHS = 36;
 const CALCULATION_MONTHS = 60;
 const BASE_COHORTS = 12;
 const SCENARIO_COHORTS = 18;
+const DESIGN_URL = "https://github.com/keqi119/Ant_charge_station/blob/main/docs/superpowers/specs/2026-08-16-charge-station-financing-model-design.md";
 const SLOW_ROLLOUT = Object.freeze([0.03, 0.04, 0.04, 0.05, 0.05, 0.06, 0.06, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.06, 0.06, 0.05, 0.04, 0.04]);
 
 function excelColumn(number) {
@@ -236,7 +237,7 @@ function buildLease(workbook) {
   sheet.getRange("B101:BI101").formulas = formulaRow(2, CALCULATION_MONTHS, (_, column) => `='36月运营模型'!${column}$5`);
   sheet.getRange("B101:BI101").format.numberFormat = "yyyy-mm";
   sheet.getRange("B102:BI102").formulas = formulaRow(2, CALCULATION_MONTHS, (index, column) => `=SUMIFS($M$5:$M$16,$C$5:$C$16,${column}$101)${index === 0 ? "+SUMIFS($M$5:$M$16,$C$5:$C$16,\"<\"&$B$101)" : ""}`);
-  sheet.getRange("B103:BI103").formulas = formulaRow(2, CALCULATION_MONTHS, (_, column) => `=SUMIFS($M$5:$M$16,$L$5:$L$16,${column}$101)`);
+  sheet.getRange("B103:BI103").formulas = formulaRow(2, CALCULATION_MONTHS, (index, column) => `=SUMIFS($M$5:$M$16,$L$5:$L$16,${column}$101)${index === 0 ? "+SUMIFS($M$5:$M$16,$L$5:$L$16,\"<\"&$B$101)" : ""}`);
   sheet.getRange("B104:BI104").formulas = formulaRow(2, CALCULATION_MONTHS, (index, column) => `=${index === 0 ? "B102-B103" : `${excelColumn(1 + index)}104+${column}102-${column}103`}`);
   sheet.getRange("B105:BI105").formulas = formulaRow(2, CALCULATION_MONTHS, (_, column) => `=SUMIFS($E$5:$E$16,$F$5:$F$16,${column}$101)`);
   sheet.getRange("B106:BI106").formulas = formulaRow(2, CALCULATION_MONTHS, (_, column) => `=SUM(${column}38:${column}49)-SUM(${column}86:${column}97)`);
@@ -306,12 +307,14 @@ function scenarioDisbursementFormula(scenarioRow, monthColumn) {
   return `SUM(${terms.join(",")})`;
 }
 
-function scenarioSupplierPaymentFormula(scenarioRow, monthColumn) {
+function scenarioSupplierPaymentFormula(scenarioRow, monthColumn, monthIndex) {
   const terms = Array.from({ length: SCENARIO_COHORTS }, (_, cohort) => {
     const shareColumn = excelColumn(13 + cohort);
-    return `IF(${monthColumn}$4=EDATE('核心假设'!$B$5,${cohort}+1),SUM('融资租赁与资金缺口'!$M$5:$M$16)*$${shareColumn}${scenarioRow},0)`;
+    const paymentMonth = `EDATE('核心假设'!$B$5,${cohort}-1+'核心假设'!$B$31)`;
+    const timingTest = monthIndex === 0 ? `${paymentMonth}<=${monthColumn}$4` : `${monthColumn}$4=${paymentMonth}`;
+    return `IF(${timingTest},SUM('融资租赁与资金缺口'!$M$5:$M$16)*$${shareColumn}${scenarioRow},0)`;
   });
-  return `SUM(${terms.join(",")})`;
+  return `=SUM(${terms.join(",")})`;
 }
 
 function termRentExpression(metadataRow, termRow) {
@@ -350,12 +353,13 @@ function buildScenarioHelpers(sheet) {
 
   for (let scenario = 0; scenario < 6; scenario += 1) {
     const scenarioRow = 5 + scenario;
-    const serviceRow = 5 + scenario * 5;
+    const serviceRow = 5 + scenario * 6;
     const cfadsRow = serviceRow + 1;
     const debtRow = serviceRow + 2;
     const dscrRow = serviceRow + 3;
-    const cashRow = serviceRow + 4;
-    sheet.getRange(`AE${serviceRow}:AE${cashRow}`).values = [[`${sheet.getRange(`A${scenarioRow}`).values[0][0]}服务费`], ["CFADS"], ["债务支付"], ["DSCR"], ["注资前累计现金"]];
+    const supplierRow = serviceRow + 4;
+    const cashRow = serviceRow + 5;
+    sheet.getRange(`AE${serviceRow}:AE${cashRow}`).values = [[`${sheet.getRange(`A${scenarioRow}`).values[0][0]}服务费`], ["CFADS"], ["债务支付"], ["DSCR"], ["供应商付款"], ["注资前累计现金"]];
     for (let month = 0; month < CALCULATION_MONTHS; month += 1) {
       const column = excelColumn(firstHelperColumn + month);
       sheet.getRange(`${column}${serviceRow}`).formulas = [[scenarioServiceFormula(scenarioRow, month, column)]];
@@ -364,7 +368,8 @@ function buildScenarioHelpers(sheet) {
       sheet.getRange(`${column}${cfadsRow}`).formulas = [[`=${column}${serviceRow}-IF($G${scenarioRow}="固定租金",${stations}*'核心假设'!$B$35,${column}${serviceRow}*'核心假设'!$B$34)-${column}${serviceRow}*$H${scenarioRow}-'核心假设'!$B$37-${column}${serviceRow}*'核心假设'!$B$38`]];
       sheet.getRange(`${column}${debtRow}`).formulas = [[scenarioDebtFormula(scenarioRow, column)]];
       sheet.getRange(`${column}${dscrRow}`).formulas = [[`=IF(${column}${debtRow}=0,"",${column}${cfadsRow}/${column}${debtRow})`]];
-      const cashChange = `${column}${cfadsRow}-${column}${debtRow}+${scenarioDisbursementFormula(scenarioRow, column)}-${scenarioSupplierPaymentFormula(scenarioRow, column)}`;
+      sheet.getRange(`${column}${supplierRow}`).formulas = [[scenarioSupplierPaymentFormula(scenarioRow, column, month)]];
+      const cashChange = `${column}${cfadsRow}-${column}${debtRow}+${scenarioDisbursementFormula(scenarioRow, column)}-${column}${supplierRow}`;
       sheet.getRange(`${column}${cashRow}`).formulas = [[`=${month === 0 ? `'核心假设'!$B$39+${cashChange}` : `${excelColumn(firstHelperColumn + month - 1)}${cashRow}+${cashChange}`}`]];
     }
     sheet.getRange(`I${scenarioRow}`).formulas = [[`=SUM(${first}${serviceRow}:${excelColumn(firstHelperColumn + REPORT_MONTHS - 1)}${serviceRow})`]];
@@ -404,6 +409,7 @@ function buildScenarioHelpers(sheet) {
 
 function buildScenariosChecksAndSources(workbook) {
   const sheet = workbook.worksheets.getItem("情景分析、检查与来源");
+  const deploymentSheet = workbook.worksheets.getItem("月度投放计划");
   const oldSources = sheet.getRange("A20:H500").values.filter((row) => row[0]);
   sheet.getRange("A1:CM500").clear({ applyTo: "all" });
   title(sheet, "A1:K1", "情景分析、检查与来源｜承销压力、期限比较与审计状态");
@@ -432,7 +438,20 @@ function buildScenariosChecksAndSources(workbook) {
       else sheet.getRange(`${column}${row}`).formulas = [["=0"]];
     }
   }
-  styleCrossSheet(sheet.getRange("B5:H10"));
+  styleFormula(sheet.getRange("B5:H10"));
+  styleCrossSheet(sheet.getRange("B5:H6"));
+  styleCrossSheet(sheet.getRange("B7"));
+  styleCrossSheet(sheet.getRange("D7:H7"));
+  styleCrossSheet(sheet.getRange("B8:E8"));
+  styleCrossSheet(sheet.getRange("G8:H8"));
+  styleCrossSheet(sheet.getRange("B9:H9"));
+  styleCrossSheet(sheet.getRange("B10"));
+  for (const address of ["C7", "F8", "C10", "D10", "E10", "F10", "G10", "H10"]) {
+    workbook.comments.addThread(
+      { cell: sheet.getRange(address) },
+      `Source: Task 9 approved scenario constant | As-of: 2026-08-16 | URL: ${DESIGN_URL} | Accessed: 2026-08-16 | Notes: Approved stress-case definition; black formula text denotes an in-sheet design constant.`,
+    );
+  }
   styleFormula(sheet.getRange("L5:AD10"));
   formatFinancial(sheet.getRange("B5:B10"));
   formatPercent(sheet.getRange("C5:C10"));
@@ -454,6 +473,16 @@ function buildScenariosChecksAndSources(workbook) {
 
   buildScenarioHelpers(sheet);
 
+  deploymentSheet.getRange("AI27").values = [["首批前6月实际上线"]];
+  deploymentSheet.getRange("AI28:AI83").formulas = Array.from({ length: 56 }, (_, index) => {
+    const row = 28 + index;
+    return [`=IF(INDEX('城市分配'!$D$6:$D$61,MATCH($A${row},'城市分配'!$B$6:$B$61,0))="是",--(SUM($J${row}:$O${row})+SUM($V${row}:$AA${row})>0),0)`];
+  });
+  styleSection(deploymentSheet.getRange("AI27"));
+  styleCrossSheet(deploymentSheet.getRange("AI28:AI83"));
+  formatCount(deploymentSheet.getRange("AI28:AI83"));
+  deploymentSheet.getRange("AI1:AI83").format.columnWidth = 19;
+
   sheet.getRange("A19").values = [["模型总状态"]];
   sheet.getRange("B19").formulas = [["=IF(COUNTIF(F22:F38,\"FAIL\")=0,\"PASS\",\"FAIL\")"]];
   section(sheet, "A20:H20", "至少17项公式检查");
@@ -463,7 +492,7 @@ function buildScenariosChecksAndSources(workbook) {
     ["新增枪数累计精确等于目标", "=SUM('36月运营模型'!$B$7:$BI$7)", "='核心假设'!$B$6", 0, "36月运营模型!B7:BI7", "投放期后新增为0"],
     ["城市枪数/站数非负且站数为整数", "=COUNTIF('城市分配'!$J$6:$J$61,\"<0\")+COUNTIF('城市分配'!$L$6:$M$61,\"<0\")", "=0", 0, "城市分配!J6:M61", "2枪/4枪站数由ROUND公式生成整数"],
     ["每城站型枪数回归目标", "=COUNTIF('城市分配'!$O$6:$O$61,\"<>0\")", "=0", 0, "城市分配!O6:O61", "2×2枪站+4×4枪站=目标，亦保证偶数枪"],
-    ["首批26城前6月上线", "=COUNTIFS('城市分配'!$D$6:$D$61,\"是\",'城市分配'!$P$6:$P$61,\"<=5\")", "='核心假设'!$B$46", 0, "城市分配!D6:P61", "2026-09至2027-02至少一批非零"],
+    ["首批26城前6月实际上线", "='核心假设'!$B$46-SUM('月度投放计划'!$AI$28:$AI$83)", "=0", 0, "月度投放计划!J28:O83,V28:AA83,AI28:AI83", "直接检查每个固定城市前6月实际2枪/4枪站数"],
     ["月度新增与城市批次明细一致", "=SUM('月度投放计划'!$J$17:$U$17)+SUM('月度投放计划'!$AH$28:$AH$83)", "=0", 0, "月度投放计划!J17:AH83", "月度站型和逐城分配同时回归"],
     ["总投资与原值成本口径", "=SUM('融资租赁与资金缺口'!$M$5:$M$16)", "=SUM('月度投放计划'!$J$15:$U$15)*'单站成本'!$E$5+SUM('月度投放计划'!$J$16:$U$16)*'单站成本'!$E$6", 0.01, "融资租赁与资金缺口!D5:M16", "总投资含渠道，租赁原值仅设备工程"],
     ["应付形成/付款/余额滚动", "=SUM('融资租赁与资金缺口'!$B$102:$BI$102)-SUM('融资租赁与资金缺口'!$B$103:$BI$103)-'融资租赁与资金缺口'!$BI$104", "=0", 0.01, "融资租赁与资金缺口!102:104", "供应商选定形成应付并按t+2付款"],
@@ -476,7 +505,7 @@ function buildScenariosChecksAndSources(workbook) {
     ["最低股东资金注入后不为负", "=MIN('融资租赁与资金缺口'!$B$119:$BI$119)", "=0", 0.01, "融资租赁与资金缺口!118:119", "最低股东资金填补峰值缺口"],
     ["36月报告/60月尾期边界", "=COUNTIF('36月运营模型'!$B$6:$AK$6,\"正式报告\")+COUNTIF('36月运营模型'!$AL$6:$BI$6,\"债务尾期\")", "='核心假设'!$B$8", 0, "36月运营模型!B5:BI20", "前36月正式报告，后24月债务尾期"],
     ["强制来源与代理说明完整", "=COUNTIF($A$43:$A$500,\"SRC-*\")-COUNTIFS($A$43:$A$500,\"SRC-*\",$G$43:$G$500,\"<>\")", "=0", 0, "情景分析、检查与来源!A43:I500", "每个来源ID均保留Ref；代理和缺失在Notes披露"],
-    ["全工作簿公式错误扫描（构建时）", "=0", "=0", 0, "构建程序/workbook.inspect", "构建测试显式扫描五类Excel错误，不在公式中吞错"],
+    ["六情景峰值资金缺口非负", "=COUNTIF($K$5:$K$10,\"<0\")", "=0", 0, "情景分析、检查与来源!K5:K10", "六情景资金缺口均按非负金额展示"],
   ];
   sheet.getRange("A22:A38").values = checks.map((row) => [row[0]]);
   sheet.getRange("B22:B38").formulas = checks.map((row) => [row[1]]);
@@ -489,6 +518,13 @@ function buildScenariosChecksAndSources(workbook) {
   styleFormula(sheet.getRange("D22:F38"));
   styleCheck(sheet.getRange("A22:H38"));
   sheet.getRange("B22:E38").format.numberFormat = "0.000000;[Red](0.000000);-";
+
+  sheet.getRange("A39:H39").values = [["外部构建门禁（不计入模型总状态）", "Node workbook.inspect", "", "", "", "由测试单独判定", "tests/workbook_formulas.test.mjs", "五类Excel公式错误扫描"]];
+  sheet.getRange("A39:H39").format = {
+    fill: "#FFF2CC",
+    font: { bold: true, color: "#C00000", name: "Arial" },
+    wrapText: true,
+  };
 
   section(sheet, "A40:I40", "来源目录与范围口径");
   sheet.getRange("A42:I42").values = [["Item", "Value", "Units", "Period/As-of", "Source Type", "Source Name", "Ref", "Notes", "Accessed"]];
