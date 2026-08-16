@@ -1,8 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
+
+import * as modelBuilder from "../build_model.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const cities = JSON.parse(readFileSync(join(here, "../data/city_inputs.json"), "utf8"));
@@ -116,6 +119,40 @@ test("audit manifest covers population and all optional metric provenance states
     assert.equal(audit.charging.directSourceUrl, city.chargingSourceUrl);
     if (city.pre2005HousingProxy === null) assert.ok(audit.housing.missingReason);
     if (city.publicChargingGuns === null) assert.ok(audit.charging.missingReason);
+  }
+});
+
+test("production city loading rejects manifest drift and city-input drift", () => {
+  const tempDir = mkdtempSync(join(tmpdir(), "city-audit-gate-"));
+  const cityInputsPath = join(tempDir, "city_inputs.json");
+  const auditManifestPath = join(tempDir, "city_metric_audit_manifest.json");
+  const manifest = loadManifest();
+  try {
+    writeFileSync(cityInputsPath, JSON.stringify(cities), "utf8");
+    writeFileSync(auditManifestPath, JSON.stringify(manifest), "utf8");
+    assert.equal(
+      modelBuilder.loadValidatedCityInputs({ cityInputsPath, auditManifestPath }).length,
+      56,
+    );
+
+    const driftedManifest = structuredClone(manifest);
+    driftedManifest.cities[0].population.expectedValue10k += 1;
+    writeFileSync(auditManifestPath, JSON.stringify(driftedManifest), "utf8");
+    assert.throws(
+      () => modelBuilder.loadValidatedCityInputs({ cityInputsPath, auditManifestPath }),
+      /population manifest drift/,
+    );
+
+    const driftedCities = structuredClone(cities);
+    driftedCities[0].population10k += 1;
+    writeFileSync(cityInputsPath, JSON.stringify(driftedCities), "utf8");
+    writeFileSync(auditManifestPath, JSON.stringify(manifest), "utf8");
+    assert.throws(
+      () => modelBuilder.loadValidatedCityInputs({ cityInputsPath, auditManifestPath }),
+      /population manifest drift/,
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
   }
 });
 

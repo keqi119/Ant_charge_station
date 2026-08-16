@@ -6,7 +6,12 @@ import { FIXED_CITIES, BASE_ASSUMPTIONS, PATHS, SHEET_NAMES } from "./model/cons
 import { allocateCityTargets, scoreCities } from "./model/city_engine.mjs";
 import { buildDeploymentPlan } from "./model/deployment_engine.mjs";
 import { profileHistoricalRows } from "./model/historical_engine.mjs";
-import { loadJson, validateCityInputs, validateSeasonalityInputs } from "./model/input_validation.mjs";
+import {
+  loadJson,
+  validateCityInputs,
+  validateCityMetricAuditManifest,
+  validateSeasonalityInputs,
+} from "./model/input_validation.mjs";
 import { buildSeasonalityCurve, annualizePeakBenchmark } from "./model/seasonality_engine.mjs";
 import { loadSourceMatrix, normalizeSourceMatrix } from "./model/source_reader.mjs";
 import { buildInputSheets, createWorkbook } from "./model/workbook_inputs.mjs";
@@ -24,13 +29,22 @@ const CITY_CONFIG = Object.freeze({
 
 let defaultContextPromise;
 
+export function loadValidatedCityInputs({
+  cityInputsPath = join(WORK_DIR, "data", "city_inputs.json"),
+  auditManifestPath = join(WORK_DIR, "data", "city_metric_audit_manifest.json"),
+} = {}) {
+  const cityInputs = validateCityInputs(loadJson(cityInputsPath), FIXED_CITIES);
+  validateCityMetricAuditManifest(loadJson(auditManifestPath), cityInputs);
+  return cityInputs;
+}
+
 async function loadModelContext(sourcePath) {
+  const cityInputs = loadValidatedCityInputs();
   const { matrix: sourceMatrix } = await loadSourceMatrix(sourcePath);
   const sourceRows = normalizeSourceMatrix(sourceMatrix);
   const historical = profileHistoricalRows(sourceRows, { matureOperatingDays: 30 });
   const seasonalityInputs = validateSeasonalityInputs(loadJson(join(WORK_DIR, "data", "seasonality_2024.json")));
   const seasonality = buildSeasonalityCurve(seasonalityInputs);
-  const cityInputs = validateCityInputs(loadJson(join(WORK_DIR, "data", "city_inputs.json")), FIXED_CITIES);
   const scoredCities = scoreCities(cityInputs, CITY_WEIGHTS);
   const allocations = allocateCityTargets(scoredCities, CITY_CONFIG);
   const deployment = buildDeploymentPlan(allocations, {
@@ -73,8 +87,8 @@ export async function buildModel({ exportFile = false, renderPreviews = false, c
     throw new Error("Task 8 builds an in-memory workbook only; export and preview rendering are deferred to Task 10");
   }
   const resolvedContext = context ?? buildModelContext(sourcePath);
-  const workbook = createWorkbook();
   const modelContext = await resolvedContext;
+  const workbook = createWorkbook();
   buildInputSheets(workbook, modelContext);
   buildOutputSheets(workbook, modelContext);
   applyWorkbookStyles(workbook);

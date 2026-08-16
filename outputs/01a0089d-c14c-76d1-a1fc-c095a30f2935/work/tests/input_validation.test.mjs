@@ -167,8 +167,54 @@ test("city validation requires population for automatic selection candidates", (
 
 test("city validation requires year and source whenever an indicator has a value", () => {
   assert.throws(
-    () => validateCityInputs([validCity({ builtAreaKm2: 500, densityYear: null, densitySourceUrl: "" })], ["合肥"]),
-    /built-area indicator requires year and source/,
+    () => validateCityInputs([validCity({ urbanPopulation10k: 800, builtAreaKm2: 500, densityYear: null, densitySourceUrl: "" })], ["合肥"]),
+    /density pair requires a reasonable year and source/,
+  );
+});
+
+test("city validation requires urban population and built area as one density pair", () => {
+  const densityProvenance = {
+    densityYear: 2022,
+    densitySourceUrl: "https://www.mohurd.gov.cn/direct-density.xls",
+  };
+  assert.throws(
+    () => validateCityInputs([validCity({ urbanPopulation10k: 800, ...densityProvenance })], ["合肥"]),
+    /urban population and built area must be paired/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ builtAreaKm2: 500, ...densityProvenance })], ["合肥"]),
+    /urban population and built area must be paired/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ ...densityProvenance })], ["合肥"]),
+    /density null state requires null year and blank source/,
+  );
+});
+
+test("city validation bidirectionally couples metric values to provenance and reasonable years", () => {
+  assert.throws(
+    () => validateCityInputs([validCity({ populationYear: 1899 })], ["合肥"]),
+    /population pair requires a reasonable year and source/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ population10k: null })], ["合肥"]),
+    /population null state requires null year and blank source/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ housingYear: 2024, housingSourceUrl: "https://gov.example/housing" })], ["合肥"]),
+    /housing null state requires null year and blank source/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ pre2005HousingProxy: 10, housingYear: 2024, housingSourceUrl: "https://gov.example/housing" })], ["合肥"]),
+    /housing value and metric must be paired/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ publicChargingGuns: 10, chargingYear: 2027, chargingSourceUrl: "https://gov.example/charging" })], ["合肥"]),
+    /charging value requires a reasonable year and source/,
+  );
+  assert.throws(
+    () => validateCityInputs([validCity({ chargingYear: 2024, chargingSourceUrl: "https://gov.example/charging" })], ["合肥"]),
+    /charging null state requires null year and blank source/,
   );
 });
 
@@ -255,6 +301,22 @@ test("city metric audit manifest rejects value, computation, and provenance drif
     [swappedCityDensity[2].urbanPopulation10k, swappedCityDensity[0].urbanPopulation10k];
   assert.throws(
     () => inputValidation.validateCityMetricAuditManifest(manifest, swappedCityDensity),
+    /density manifest drift/,
+  );
+
+  const wrongDensityYear = structuredClone(cities);
+  const yearRow = wrongDensityYear.find((city) => city.urbanPopulation10k !== null);
+  yearRow.densityYear -= 1;
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(manifest, wrongDensityYear),
+    /density manifest drift/,
+  );
+
+  const wrongDensitySource = structuredClone(cities);
+  const sourceRow = wrongDensitySource.find((city) => city.urbanPopulation10k !== null);
+  sourceRow.densitySourceUrl = "https://gov.example/wrong-density.xls";
+  assert.throws(
+    () => inputValidation.validateCityMetricAuditManifest(manifest, wrongDensitySource),
     /density manifest drift/,
   );
 

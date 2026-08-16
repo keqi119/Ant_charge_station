@@ -61,6 +61,21 @@ function isNonNegativeInteger(value) {
   return Number.isInteger(value) && value >= 0;
 }
 
+function isReasonableYear(value, accessedDate) {
+  const accessedYear = Number.parseInt(accessedDate.slice(0, 4), 10);
+  return Number.isInteger(value) && value >= 1900 && value <= accessedYear;
+}
+
+function validateProvenanceCoupling({ hasValue, year, sourceUrl, accessedDate, label, row }) {
+  if (hasValue) {
+    if (!isReasonableYear(year, accessedDate) || !isHttpUrl(sourceUrl)) {
+      throw new Error(`${label} requires a reasonable year and source row ${row}`);
+    }
+  } else if (year !== null || sourceUrl !== "") {
+    throw new Error(`${label.replace(/ (?:pair|value)$/u, "")} null state requires null year and blank source row ${row}`);
+  }
+}
+
 export function loadJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
@@ -186,26 +201,51 @@ export function validateCityInputs(records, fixedCities) {
       }
     }
 
-    if (record.population10k !== null || record.urbanPopulation10k !== null) {
-      if (!Number.isInteger(record.populationYear) || !isHttpUrl(record.populationSourceUrl)) {
-        throw new Error(`population indicator requires year and source row ${row}`);
-      }
+    validateProvenanceCoupling({
+      hasValue: record.population10k !== null,
+      year: record.populationYear,
+      sourceUrl: record.populationSourceUrl,
+      accessedDate: record.accessedDate,
+      label: "population pair",
+      row,
+    });
+
+    const hasUrbanPopulation = record.urbanPopulation10k !== null;
+    const hasBuiltArea = record.builtAreaKm2 !== null;
+    if (hasUrbanPopulation !== hasBuiltArea) {
+      throw new Error(`urban population and built area must be paired row ${row}`);
     }
-    if (record.builtAreaKm2 !== null) {
-      if (!Number.isInteger(record.densityYear) || !isHttpUrl(record.densitySourceUrl)) {
-        throw new Error(`built-area indicator requires year and source row ${row}`);
-      }
+    validateProvenanceCoupling({
+      hasValue: hasUrbanPopulation,
+      year: record.densityYear,
+      sourceUrl: record.densitySourceUrl,
+      accessedDate: record.accessedDate,
+      label: "density pair",
+      row,
+    });
+
+    const hasHousingValue = record.pre2005HousingProxy !== null;
+    const hasHousingMetric = record.housingMetric !== null;
+    if (hasHousingValue !== hasHousingMetric) {
+      throw new Error(`housing value and metric must be paired row ${row}`);
     }
-    if (record.pre2005HousingProxy !== null || record.housingMetric !== null) {
-      if (!Number.isInteger(record.housingYear) || !isHttpUrl(record.housingSourceUrl)) {
-        throw new Error(`housing indicator requires year and source row ${row}`);
-      }
-    }
-    if (record.publicChargingGuns !== null) {
-      if (!Number.isInteger(record.chargingYear) || !isHttpUrl(record.chargingSourceUrl)) {
-        throw new Error(`charging indicator requires year and source row ${row}`);
-      }
-    }
+    validateProvenanceCoupling({
+      hasValue: hasHousingValue,
+      year: record.housingYear,
+      sourceUrl: record.housingSourceUrl,
+      accessedDate: record.accessedDate,
+      label: "housing value",
+      row,
+    });
+
+    validateProvenanceCoupling({
+      hasValue: record.publicChargingGuns !== null,
+      year: record.chargingYear,
+      sourceUrl: record.chargingSourceUrl,
+      accessedDate: record.accessedDate,
+      label: "charging value",
+      row,
+    });
 
     const optionalValues = [
       record.urbanPopulation10k,
