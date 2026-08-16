@@ -11,6 +11,7 @@ import { buildSeasonalityCurve } from "../model/seasonality_engine.mjs";
 const here = dirname(fileURLToPath(import.meta.url));
 let contextPromise;
 let workbookPromise;
+let fastWorkbookPromise;
 
 function getRealContext() {
   return contextPromise ??= buildModelContext();
@@ -18,6 +19,10 @@ function getRealContext() {
 
 function getRealWorkbook() {
   return workbookPromise ??= buildModel({ exportFile: false, renderPreviews: false });
+}
+
+function getFastWorkbook() {
+  return fastWorkbookPromise ??= buildModel({ context: buildFastContext() });
 }
 
 function buildFastContext() {
@@ -150,6 +155,37 @@ test("two-gun and four-gun month headers share the yyyy-mm format", async () => 
   assert.match(fourGunStyle.ndjson, /yyyy-mm/i);
   assert.match(twoGunStyle.ndjson, /008000/i);
   assert.match(fourGunStyle.ndjson, /008000/i);
+});
+
+test("city-weight total is a same-sheet formula with black calculation styling", async () => {
+  const workbook = await getFastWorkbook();
+  const assumptions = workbook.worksheets.getItem("核心假设");
+
+  assert.equal(assumptions.getRange("B14").formulas[0][0], "=SUM(B10:B13)");
+  assert.equal(assumptions.getRange("B14").values[0][0], 1);
+  const style = await workbook.inspect({ kind: "computedStyle", sheetId: "核心假设", range: "B14", maxChars: 2000 });
+  assert.match(style.ndjson, /000000/i);
+  assert.doesNotMatch(style.ndjson, /0000FF/i);
+});
+
+test("core gun and financing assumptions expose guarded validation with user guidance", async () => {
+  const workbook = await getFastWorkbook();
+  const assumptions = workbook.worksheets.getItem("核心假设");
+  const targetValidation = assumptions.getRange("B6").dataValidation;
+  const financeRatioValidation = assumptions.getRange("B27").dataValidation;
+  const financeRateValidation = assumptions.getRange("B29").dataValidation;
+  const residualValidation = assumptions.getRange("B32").dataValidation;
+
+  assert.equal(targetValidation?.rule?.type, "custom");
+  assert.equal(targetValidation?.rule?.formula1, "AND(B6>0,MOD(B6,1)=0,MOD(B6,2)=0)");
+  assert.match(targetValidation?.prompt?.message ?? "", /正偶数/);
+  assert.deepEqual(financeRatioValidation?.rule?.values, ["80%", "90%", "100%"]);
+  assert.deepEqual(financeRateValidation?.rule?.values, ["6%", "8%", "10%", "12%"]);
+  assert.equal(residualValidation?.rule?.type, "decimal");
+  assert.equal(residualValidation?.rule?.operator, "between");
+  assert.equal(residualValidation?.rule?.formula1, "0");
+  assert.equal(residualValidation?.rule?.formula2, "B27");
+  assert.match(residualValidation?.errorAlert?.message ?? "", /不高于融资比例/);
 });
 
 test("selectors, source comments, and finance color conventions are present", async () => {

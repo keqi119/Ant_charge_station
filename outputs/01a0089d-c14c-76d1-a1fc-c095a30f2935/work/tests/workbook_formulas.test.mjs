@@ -254,6 +254,58 @@ test("supplier terms move scenario payments and gaps with the main finance sched
   assert.equal(scenarios.getRange("B19").values[0][0], "FAIL");
 });
 
+test("visible checks reject pasted odd gun targets and residuals above financing", async () => {
+  const workbook = await buildModel({ context: buildFastContext() });
+  const assumptions = workbook.worksheets.getItem("核心假设");
+  const finance = workbook.worksheets.getItem("融资租赁与资金缺口");
+  const checks = workbook.worksheets.getItem("情景分析、检查与来源");
+  const reassign = (sheet, address) => {
+    const formulas = sheet.getRange(address).formulas;
+    sheet.getRange(address).formulas = formulas;
+  };
+  const originalTarget = assumptions.getRange("B6").values[0][0];
+  const originalFinanceRatio = assumptions.getRange("B27").values[0][0];
+  const residualRate = assumptions.getRange("B32").values[0][0];
+
+  assert.match(checks.getRange("B23").formulas[0][0], /MOD\('城市分配'!\$J\$6,2\)/);
+  assert.match(checks.getRange("B23").formulas[0][0], /MOD\('城市分配'!\$L\$6,1\)/);
+  assert.match(checks.getRange("B23").formulas[0][0], /MOD\('城市分配'!\$M\$61,1\)/);
+  assert.match(checks.getRange("B29").formulas[0][0], /\$B\$27=80%/);
+  assert.match(checks.getRange("B29").formulas[0][0], /\$B\$29=6%/);
+  assert.match(checks.getRange("B29").formulas[0][0], /\$J\$5>'融资租赁与资金缺口'!\$E\$5/);
+
+  assumptions.getRange("B6").values = [[30001]];
+  reassign(checks, "B23");
+  reassign(checks, "D23:F23");
+  reassign(checks, "B19");
+  assert.equal(checks.getRange("F23").values[0][0], "FAIL");
+  assert.equal(checks.getRange("B19").values[0][0], "FAIL");
+
+  assumptions.getRange("B6").values = [[originalTarget]];
+  reassign(checks, "B23");
+  reassign(checks, "D23:F23");
+  reassign(checks, "B19");
+  assert.equal(checks.getRange("F23").values[0][0], "PASS");
+  assert.equal(checks.getRange("B19").values[0][0], "PASS");
+
+  assumptions.getRange("B27").values = [[residualRate / 2]];
+  reassign(finance, "E5:E16");
+  reassign(checks, "B29");
+  reassign(checks, "D29:F29");
+  reassign(checks, "B19");
+  assert.ok(finance.getRange("J5:J16").values.some((row, index) => row[0] > finance.getRange(`E${5 + index}`).values[0][0]));
+  assert.equal(checks.getRange("F29").values[0][0], "FAIL");
+  assert.equal(checks.getRange("B19").values[0][0], "FAIL");
+
+  assumptions.getRange("B27").values = [[originalFinanceRatio]];
+  reassign(finance, "E5:E16");
+  reassign(checks, "B29");
+  reassign(checks, "D29:F29");
+  reassign(checks, "B19");
+  assert.equal(checks.getRange("F29").values[0][0], "PASS");
+  assert.equal(checks.getRange("B19").values[0][0], "PASS");
+});
+
 test("management summary is linked, warns on zero HQ and tax, and contains five native charts", async () => {
   const workbook = await getWorkbook();
   const sheet = workbook.worksheets.getItem("融资摘要");

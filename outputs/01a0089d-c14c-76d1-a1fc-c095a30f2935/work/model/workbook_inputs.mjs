@@ -112,7 +112,7 @@ function buildCoreAssumptions(workbook, context) {
     ["密度权重", 0.25, "%"],
     ["老旧住房权重", 0.30, "%"],
     ["充电稀缺权重", 0.15, "%"],
-    ["城市权重合计", 1, "%"],
+    ["城市权重合计", null, "%"],
     ["2枪站设备", BASE_ASSUMPTIONS.costByStationType.twoGun.equipment, "元/站"],
     ["2枪站工程施工及辅材", BASE_ASSUMPTIONS.costByStationType.twoGun.engineering, "元/站"],
     ["2枪站渠道公关", BASE_ASSUMPTIONS.costByStationType.twoGun.channel, "元/站"],
@@ -152,9 +152,12 @@ function buildCoreAssumptions(workbook, context) {
   ];
   sheet.getRange("A5:C50").values = assumptions;
   sheet.getRange("B9").formulas = [['=COUNTIF(B55:M55,">0")']];
+  sheet.getRange("B14").formulas = [["=SUM(B10:B13)"]];
   styleInput(sheet.getRange("B5:B8"));
   styleFormula(sheet.getRange("B9"));
-  styleInput(sheet.getRange("B10:B50"));
+  styleInput(sheet.getRange("B10:B13"));
+  styleFormula(sheet.getRange("B14"));
+  styleInput(sheet.getRange("B15:B50"));
   formatPercent(sheet.getRange("B10:B13"));
   formatPercent(sheet.getRange("B14:B14"));
   formatPercent(sheet.getRange("B25:B27"));
@@ -167,8 +170,28 @@ function buildCoreAssumptions(workbook, context) {
   sheet.getRange("B44:B45").format.numberFormat = "yyyy-mm-dd";
   sheet.getRange("B50").format.numberFormat = "yyyy-mm-dd";
 
+  sheet.getRange("B6").dataValidation = {
+    rule: { type: "custom", formula1: "=AND(B6>0,MOD(B6,1)=0,MOD(B6,2)=0)" },
+    prompt: { title: "新增目标枪数", message: "请输入正偶数整数；粘贴后请确认模型检查为PASS。" },
+    errorAlert: { style: "stop", title: "无效目标枪数", message: "新增目标枪数必须为正偶数整数。" },
+  };
+  sheet.getRange("B27").dataValidation = {
+    rule: { type: "list", values: ["80%", "90%", "100%"] },
+    prompt: { title: "融资比例", message: "请选择批准值：80%、90%或100%。" },
+    errorAlert: { style: "stop", title: "无效融资比例", message: "融资比例仅允许80%、90%或100%。" },
+  };
   sheet.getRange("B28").dataValidation = { rule: { type: "list", values: ["18", "24", "36"] } };
+  sheet.getRange("B29").dataValidation = {
+    rule: { type: "list", values: ["6%", "8%", "10%", "12%"] },
+    prompt: { title: "年化综合资金成本", message: "请选择批准值：6%、8%、10%或12%。" },
+    errorAlert: { style: "stop", title: "无效资金成本", message: "年化综合资金成本仅允许6%、8%、10%或12%。" },
+  };
   sheet.getRange("B30").dataValidation = { rule: { type: "list", values: ["0", "1", "2"] } };
+  sheet.getRange("B32").dataValidation = {
+    rule: { type: "decimal", operator: "between", formula1: 0, formula2: "=B27" },
+    prompt: { title: "留购款比例", message: "请输入0%至融资比例之间的留购款比例。" },
+    errorAlert: { style: "stop", title: "无效留购款比例", message: "留购款比例必须不低于0%且不高于融资比例。" },
+  };
   sheet.getRange("B33").dataValidation = { rule: { type: "list", values: ["分成", "固定租金"] } };
   sheet.getRange("B41").dataValidation = { rule: { type: "list", values: ["P25", "P50", "加权"] } };
   sheet.getRange("B42").dataValidation = { rule: { type: "list", values: ["基准", "无季节性", "旺季下调10%"] } };
