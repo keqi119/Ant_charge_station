@@ -15,14 +15,16 @@
 ### Automated verification
 
 - Baseline full serial suite on `c5e51be`: 99 tests, 97 passed, 0 failed, 2 explicitly skipped; 522.9s. The skipped tests are opt-in Task 9 real-source/render duplicates; the same run included the real historical-source and real workbook audits.
-- Upstream visual/formula correction `d25c37e`: focused tests 2/2 passed before handoff. Current-HEAD rerun of those two contracts passed 2/2 in 55.6s: representative historical dates/blanks and matching `yyyy-mm` deployment headers.
-- Current-HEAD Task 9 formula suite: 7 passed, 0 failed, 2 explicitly skipped in 51.2s.
-- Current-HEAD pure-engine quick regression: 74/74 passed in 2.4s.
-- Final independent existing-XLSX verification: exit code 0 in 39.7s; all six key ranges were reinspected with the brief's 120-row/61-column caps, 8/8 assertions passed, formula-error scan was clean, and the peak funding gap serial was independently displayed as `2026-11`.
+- Upstream visual/formula correction `d25c37e`: focused tests 2/2 passed before handoff. Post-review current-HEAD rerun of those two contracts passed 2/2 in 28.8s: representative historical dates/blanks and matching `yyyy-mm` deployment headers.
+- Post-review current-HEAD Task 9 formula suite: 7 passed, 0 failed, 2 explicitly skipped in 37.3s.
+- Post-review current-HEAD pure-engine quick regression: 74/74 passed in 0.4s.
+- RED evidence for the post-commit review: the former single inspect of `36月运营模型!A1:BI35` returned only the A1 title and NDJSON `valuesTruncated:true`; the completeness assertion exited 1. Both chart gates also still used `>= 5` and failed the exact-five source assertion.
+- GREEN existing-XLSX verification: exit code 0 in 60.2s; all six key ranges were divided into 10-row by 8-column safe blocks (165 blocks total), every metadata object and NDJSON record was parsed, no block was empty or truncated, 9/9 assertions passed, the formula-error scan was clean, and the peak funding gap serial displayed as `2026-11`.
 
 ### Key ranges and finance checks
 
 - Inspected: `融资摘要!A1:R45`, `核心假设!A1:M65`, `历史单枪模型!A1:M80`, `36月运营模型!A1:BI35`, `融资租赁与资金缺口!A1:BI80`, and `情景分析、检查与来源!A1:I120`.
+- The finalizer now records separate `preExportKeyInspections` and `reimportKeyInspections`. Each block must return matching address, exact row/column counts, a complete values matrix, nonempty NDJSON and metadata, and no `truncated`/`valuesTruncated` flag. The post-review check reused the existing XLSX and proved all 165 reimport blocks; the full build was intentionally not rerun per review scope.
 - Pre-export audit: 46/46 PASS. Post-export reimport audit: 46/46 PASS.
 - Visible workbook checks: `情景分析、检查与来源!F22:F38` = 17/17 PASS; overall `B19` = PASS.
 - Formula-error scans before export, after reimport, and in the independent existing-file verification found none of `#REF!`, `#DIV/0!`, `#VALUE!`, `#NAME?`, `#N/A`, or `#NUM!`.
@@ -50,4 +52,4 @@
 - Artifact-tool-only export used `SpreadsheetFile.exportXlsx(workbook)` followed by `output.save(PATHS.outputWorkbook)`.
 - Artifact tool intentionally attached a 40.9 MB full-workbook `.inspect.ndjson` sidecar during export. After confirming it contained zero formula-error tokens, the sidecar was retained as ignored evidence in `work/final-export-inspect.log`; the output directory contains exactly one `.xlsx`.
 - Final workbook: `D:/Project_Mini_Charge_Station/outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/便民充电站单枪收入与融资租赁模型.xlsx`, 912,179 bytes.
-- Reimport preserved all 12 approved sheets in order, 17/17 checks, overall PASS, five summary charts, fixed historical dates, formatted deployment headers, and clean formula scan.
+- Reimport preserved all 12 approved sheets in order, 17/17 checks, overall PASS, exactly five summary charts, fixed historical dates, formatted deployment headers, and clean formula scan.

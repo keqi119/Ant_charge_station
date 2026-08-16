@@ -92,6 +92,8 @@ const KEY_RANGES = Object.freeze([
   ["融资租赁与资金缺口", "A1:BI80"],
   ["情景分析、检查与来源", "A1:I120"],
 ]);
+const KEY_INSPECT_BLOCK_ROWS = 10;
+const KEY_INSPECT_BLOCK_COLS = 8;
 const PREVIEW_SPECS = Object.freeze([
   ["融资摘要", "A1:R66", "01-融资摘要.png", 0.8],
   ["核心假设", "A1:M65", "02-核心假设.png", 0.8],
@@ -138,24 +140,118 @@ function requirePassing(checks, label) {
   }
 }
 
-async function inspectKeyRanges(workbook) {
-  const inspections = [];
-  for (const [sheetName, range] of KEY_RANGES) {
-    const result = await workbook.inspect({
-      kind: "table",
-      sheetId: sheetName,
-      range,
-      include: "values,formulas",
-      tableMaxRows: 120,
-      tableMaxCols: 61,
-      tableMaxCellChars: 160,
-      maxChars: 9000,
-      summary: `Task 10 key-range inspection: ${sheetName}!${range}`,
-    });
-    const text = result?.ndjson ?? JSON.stringify(result);
-    inspections.push({ sheetName, range, chars: text.length, lines: text.split(/\r?\n/).filter(Boolean).length });
+function columnNumber(label) {
+  return [...label].reduce((total, character) => total * 26 + character.charCodeAt(0) - 64, 0);
+}
+
+function columnLabel(number) {
+  let label = "";
+  for (let remaining = number; remaining > 0; remaining = Math.floor((remaining - 1) / 26)) {
+    label = String.fromCharCode(65 + ((remaining - 1) % 26)) + label;
   }
-  return inspections;
+  return label;
+}
+
+function splitRangeIntoBlocks(range) {
+  const match = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(range);
+  if (!match) throw new Error(`invalid key inspection range: ${range}`);
+  const [, startColumnLabel, startRowText, endColumnLabel, endRowText] = match;
+  const startColumn = columnNumber(startColumnLabel);
+  const endColumn = columnNumber(endColumnLabel);
+  const startRow = Number(startRowText);
+  const endRow = Number(endRowText);
+  if (startColumn > endColumn || startRow > endRow) throw new Error(`reversed key inspection range: ${range}`);
+
+  const blocks = [];
+  for (let row = startRow; row <= endRow; row += KEY_INSPECT_BLOCK_ROWS) {
+    const blockEndRow = Math.min(row + KEY_INSPECT_BLOCK_ROWS - 1, endRow);
+    for (let column = startColumn; column <= endColumn; column += KEY_INSPECT_BLOCK_COLS) {
+      const blockEndColumn = Math.min(column + KEY_INSPECT_BLOCK_COLS - 1, endColumn);
+      blocks.push({
+        range: `${columnLabel(column)}${row}:${columnLabel(blockEndColumn)}${blockEndRow}`,
+        rows: blockEndRow - row + 1,
+        cols: blockEndColumn - column + 1,
+      });
+    }
+  }
+  return blocks;
+}
+
+function containsTruncation(value) {
+  if (!value || typeof value !== "object") return false;
+  return Object.entries(value).some(([key, nested]) => (
+    ((key === "truncated" || key === "valuesTruncated") && nested === true)
+    || containsTruncation(nested)
+  ));
+}
+
+function parseCompleteInspection(result, sheetName, block) {
+  if (!result || typeof result !== "object") throw new Error(`${sheetName}!${block.range} returned no inspection result`);
+  if (!result.metadata || typeof result.metadata !== "object") throw new Error(`${sheetName}!${block.range} returned no inspection metadata`);
+  if (containsTruncation(result)) throw new Error(`${sheetName}!${block.range} inspection was truncated`);
+  if (typeof result.ndjson !== "string" || !result.ndjson.trim()) {
+    throw new Error(`${sheetName}!${block.range} returned empty inspection NDJSON`);
+  }
+
+  const lines = result.ndjson.split(/\r?\n/).filter((line) => line.trim());
+  const records = lines.map((line, index) => {
+    try {
+      return JSON.parse(line);
+    } catch (error) {
+      throw new Error(`${sheetName}!${block.range} NDJSON record ${index + 1} is invalid: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
+  if (!records.length) throw new Error(`${sheetName}!${block.range} returned no inspection records`);
+  if (records.some((record) => !record || typeof record !== "object" || containsTruncation(record))) {
+    throw new Error(`${sheetName}!${block.range} returned an empty or truncated inspection record`);
+  }
+  const tableRecord = records.find((record) => record.kind === "table" && record.address === block.range);
+  if (!tableRecord) throw new Error(`${sheetName}!${block.range} returned no matching table record`);
+  if (tableRecord.rows !== block.rows || tableRecord.cols !== block.cols) {
+    throw new Error(`${sheetName}!${block.range} returned ${tableRecord.rows}x${tableRecord.cols}; expected ${block.rows}x${block.cols}`);
+  }
+  if (!Array.isArray(tableRecord.values)
+      || tableRecord.values.length !== block.rows
+      || tableRecord.values.some((row) => !Array.isArray(row) || row.length !== block.cols)) {
+    throw new Error(`${sheetName}!${block.range} returned an incomplete values matrix`);
+  }
+  return { range: block.range, rows: block.rows, cols: block.cols, records: records.length, chars: result.ndjson.length };
+}
+
+async function inspectKeyRanges(workbook) {
+  const ranges = [];
+  for (const [sheetName, range] of KEY_RANGES) {
+    const blocks = splitRangeIntoBlocks(range);
+    const blockInspections = [];
+    for (const block of blocks) {
+      const result = await workbook.inspect({
+        kind: "table",
+        sheetId: sheetName,
+        range: block.range,
+        include: "values,formulas",
+        tableMaxRows: KEY_INSPECT_BLOCK_ROWS,
+        tableMaxCols: KEY_INSPECT_BLOCK_COLS,
+        tableMaxCellChars: 2000,
+        maxChars: 50000,
+        summary: `Task 10 complete key-range block: ${sheetName}!${block.range}`,
+      });
+      blockInspections.push(parseCompleteInspection(result, sheetName, block));
+    }
+    ranges.push({ sheetName, range, blocks: blockInspections });
+  }
+  return {
+    blockRows: KEY_INSPECT_BLOCK_ROWS,
+    blockCols: KEY_INSPECT_BLOCK_COLS,
+    totalRanges: ranges.length,
+    totalBlocks: ranges.reduce((total, inspection) => total + inspection.blocks.length, 0),
+    ranges,
+  };
+}
+
+function completeKeyInspectionSet(inspections) {
+  return inspections?.totalRanges === KEY_RANGES.length
+    && inspections.totalBlocks === KEY_RANGES.reduce((total, [, range]) => total + splitRangeIntoBlocks(range).length, 0)
+    && inspections.ranges.every((inspection) => inspection.blocks.length === splitRangeIntoBlocks(inspection.range).length);
 }
 
 async function scanFormulaErrors(workbook, label) {
@@ -239,7 +335,7 @@ function auditWorkbook(workbook, context, label) {
   recordCheck(checks, "其他opex非负", otherOpex.every((value) => value >= 0), `min=${Math.min(...otherOpex)}`);
   const seasonalityAverage = sum(numericValues(sheet(workbook, "年度季节曲线").getRange("H6:H17"))) / 12;
   recordCheck(checks, "季节因子年均为1", close(seasonalityAverage, 1, 0.000001), `${seasonalityAverage}`);
-  recordCheck(checks, "融资摘要原生图表", sheet(workbook, "融资摘要").charts.items.length >= 5, `${sheet(workbook, "融资摘要").charts.items.length}`);
+  recordCheck(checks, "融资摘要原生图表", sheet(workbook, "融资摘要").charts.items.length === 5, `${sheet(workbook, "融资摘要").charts.items.length}`);
   recordCheck(checks, "目标枪数摘要", cell(workbook, "融资摘要", "B5") === BASE_ASSUMPTIONS.targetGuns, `${cell(workbook, "融资摘要", "B5")}`);
   requirePassing(checks, label);
   return checks;
@@ -286,7 +382,7 @@ export async function finalizeModel({ sourcePath = PATHS.sourceWorkbook } = {}) 
   let context = await buildModelContext(sourcePath);
   let workbook = await buildModel({ context });
   console.error("[Task10] workbook built; inspecting six key ranges");
-  const inspections = await inspectKeyRanges(workbook);
+  const preExportKeyInspections = await inspectKeyRanges(workbook);
   console.error("[Task10] key ranges inspected; running finance audit and error scan");
   const buildChecks = auditWorkbook(workbook, context, "pre-export finance audit");
   const buildErrorScan = await scanFormulaErrors(workbook, "Task 10 full-workbook pre-export formula error scan");
@@ -324,6 +420,7 @@ export async function finalizeModel({ sourcePath = PATHS.sourceWorkbook } = {}) 
   workbook = null;
   globalThis.gc?.();
   const reimported = await SpreadsheetFile.importXlsx(await FileBlob.load(PATHS.outputWorkbook));
+  const reimportKeyInspections = await inspectKeyRanges(reimported);
   const reimportChecks = auditWorkbook(reimported, auditContext, "post-export reimport finance audit");
   const reimportErrorScan = await scanFormulaErrors(reimported, "Task 10 full-workbook post-export formula error scan");
   const result = {
@@ -331,11 +428,12 @@ export async function finalizeModel({ sourcePath = PATHS.sourceWorkbook } = {}) 
     completedAt: new Date().toISOString(),
     outputWorkbook: PATHS.outputWorkbook,
     outputBytes,
-    inspections,
+    preExportKeyInspections,
     buildChecks,
     buildErrorScan,
     traces,
     previews,
+    reimportKeyInspections,
     reimportChecks,
     reimportErrorScan,
     kpis: {
@@ -366,7 +464,7 @@ function excelSerialToMonth(value) {
 export async function verifyExistingWorkbook() {
   const stat = await fs.stat(PATHS.outputWorkbook);
   const workbook = await SpreadsheetFile.importXlsx(await FileBlob.load(PATHS.outputWorkbook));
-  const inspections = await inspectKeyRanges(workbook);
+  const reimportKeyInspections = await inspectKeyRanges(workbook);
   const checks = sheet(workbook, "情景分析、检查与来源");
   const sheetNames = workbook.worksheets.items.map(({ name }) => name);
   const xlsxFiles = (await fs.readdir(dirname(PATHS.outputWorkbook)))
@@ -375,7 +473,8 @@ export async function verifyExistingWorkbook() {
     ["twelve approved sheets", JSON.stringify(sheetNames) === JSON.stringify(SHEET_NAMES), sheetNames.join(" | ")],
     ["seventeen visible checks", checks.getRange("F22:F38").values.flat().every((value) => value === "PASS"), checks.getRange("F22:F38").values.flat().join(",")],
     ["overall model status", checks.getRange("B19").values[0][0] === "PASS", checks.getRange("B19").values[0][0]],
-    ["summary native charts", sheet(workbook, "融资摘要").charts.items.length >= 5, sheet(workbook, "融资摘要").charts.items.length],
+    ["summary native charts", sheet(workbook, "融资摘要").charts.items.length === 5, sheet(workbook, "融资摘要").charts.items.length],
+    ["complete key-range block inspections", completeKeyInspectionSet(reimportKeyInspections), `${reimportKeyInspections.totalBlocks} blocks across ${reimportKeyInspections.totalRanges} ranges`],
     ["historical dates have no errors", sheet(workbook, "历史单枪模型").getRange("I6:J65").values.flat().every((value) => !ERROR_PATTERN.test(String(value))), "I6:J65"],
     ["deployment month headers formatted", JSON.stringify(sheet(workbook, "月度投放计划").getRange("V4:AG4").format.numberFormat).includes("yyyy-mm"), JSON.stringify(sheet(workbook, "月度投放计划").getRange("V4:AG4").format.numberFormat)],
     ["only one xlsx output", xlsxFiles.length === 1 && xlsxFiles[0] === PATHS.outputWorkbook.split("/").at(-1), xlsxFiles.join(",")],
@@ -386,7 +485,7 @@ export async function verifyExistingWorkbook() {
   return {
     outputWorkbook: PATHS.outputWorkbook,
     outputBytes: stat.size,
-    inspections,
+    reimportKeyInspections,
     assertions,
     errorScan,
     peakFundingGapMonth: excelSerialToMonth(cell(workbook, "融资摘要", "B11")),
@@ -404,7 +503,17 @@ export async function verifyExistingWorkbook() {
 
 if (process.argv.includes("--verify-existing")) {
   const result = await verifyExistingWorkbook();
-  console.log(JSON.stringify({ ...result, processExitCode: process.exitCode ?? 0 }, null, 2));
+  const { reimportKeyInspections, ...verification } = result;
+  console.log(JSON.stringify({
+    ...verification,
+    reimportKeyInspections: {
+      blockRows: reimportKeyInspections.blockRows,
+      blockCols: reimportKeyInspections.blockCols,
+      totalRanges: reimportKeyInspections.totalRanges,
+      totalBlocks: reimportKeyInspections.totalBlocks,
+    },
+    processExitCode: process.exitCode ?? 0,
+  }, null, 2));
 } else if (process.argv.includes("--finalize")) {
   const result = await finalizeModel();
   console.log(JSON.stringify({
