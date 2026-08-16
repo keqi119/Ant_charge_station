@@ -157,6 +157,26 @@ test("rollout rejects construction after month 18 and requires a positive final 
   );
 });
 
+test("rollout rejects a positive final share that rounds to zero actual guns", () => {
+  assert.throws(
+    () => buildDeploymentPlan([{
+      city: "测试城",
+      isFixed: false,
+      fixedOrder: null,
+      twoGunSites: 0,
+      fourGunSites: 1,
+      targetGuns: 4,
+    }], {
+      startMonth: "2026-09",
+      shares: [0.99, 0.01],
+      totalGuns: 4,
+      supplierTermsMonths: 2,
+      financeDelayMonths: 1,
+    }),
+    /final.*(gun|positive)|last.*(gun|positive)/i,
+  );
+});
+
 test("finance delay accepts only online month through two months later", () => {
   const fixture = [{
     city: "测试城",

@@ -44,6 +44,7 @@ function monthlyTargets(totalGuns, shares) {
   if (targets.some((guns) => guns < 0 || guns % 2 !== 0)) {
     throw new Error("monthly rollout targets must be non-negative even gun counts");
   }
+  if (targets.at(-1) === 0) throw new RangeError("final rollout month must have positive actual guns");
   return targets;
 }
 
