@@ -108,6 +108,28 @@ test("positive-rate leases reject a residual above financed principal before amo
   );
 });
 
+test("zero and positive rates reject even a sub-cent residual excess", () => {
+  for (const annualRate of [0, 0.12]) {
+    assert.throws(
+      () => calculateLeasePayment(100, 200, annualRate, 36, 0.500025),
+      /residual.*(exceed|principal)|principal.*residual/i,
+      `annualRate=${annualRate}`,
+    );
+    assert.throws(
+      () => buildSingleLease({
+        principal: 100,
+        originalValue: 200,
+        annualRate,
+        termMonths: 36,
+        residualRate: 0.500025,
+        disbursementMonthIndex: 1,
+      }),
+      /residual.*(exceed|principal)|principal.*residual/i,
+      `annualRate=${annualRate}`,
+    );
+  }
+});
+
 test("all approved finance ratios, rates, and terms amortize without negative principal", () => {
   const financeRatios = [0.8, 0.9, 1];
   const annualRates = [0.06, 0.08, 0.10, 0.12];

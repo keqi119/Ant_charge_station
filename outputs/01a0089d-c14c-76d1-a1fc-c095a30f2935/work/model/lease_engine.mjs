@@ -67,11 +67,11 @@ function sum(rows, field) {
   return rows.reduce((total, row) => total + row[field], 0);
 }
 
-function boundResidualToPrincipal(residualAmount, financedPrincipal) {
-  if (residualAmount - financedPrincipal > LEASE_BALANCE_TOLERANCE) {
+function requireResidualWithinPrincipal(residualAmount, financedPrincipal) {
+  if (residualAmount > financedPrincipal) {
     throw new RangeError("residual cannot exceed financed principal");
   }
-  return Math.min(residualAmount, financedPrincipal);
+  return residualAmount;
 }
 
 /** Calculates the level monthly rent while separately discounting the final residual payment. */
@@ -80,7 +80,7 @@ export function calculateLeasePayment(principal, originalValue, annualRate, term
   const assetOriginalValue = requireFinite(originalValue, "originalValue", { positive: true });
   const yearlyRate = requireRate(annualRate, "annualRate");
   const months = requireTerm(termMonths);
-  const residualAmount = boundResidualToPrincipal(
+  const residualAmount = requireResidualWithinPrincipal(
     assetOriginalValue * requireRate(residualRate, "residualRate"),
     financedPrincipal,
   );
@@ -106,7 +106,7 @@ export function buildSingleLease(config) {
   if (!Number.isInteger(config.disbursementMonthIndex) || config.disbursementMonthIndex < 0) {
     throw new TypeError("disbursementMonthIndex must be a non-negative integer");
   }
-  const residualAmount = boundResidualToPrincipal(originalValue * residualRate, principal);
+  const residualAmount = requireResidualWithinPrincipal(originalValue * residualRate, principal);
   const levelRent = calculateLeasePayment(principal, originalValue, annualRate, termMonths, residualRate);
   const monthlyRate = annualRate / 12;
   const payments = [];
