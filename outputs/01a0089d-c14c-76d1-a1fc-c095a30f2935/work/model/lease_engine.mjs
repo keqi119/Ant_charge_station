@@ -10,6 +10,7 @@ export const SLOW_DEPLOYMENT_SHARES = Object.freeze(
 export const SCENARIO_NAMES = Object.freeze(["基准", "保守收入", "融资收缩", "放款延迟", "慢建设", "综合压力"]);
 
 const TERM_OPTIONS = new Set([18, 24, 36]);
+const LEASE_BALANCE_TOLERANCE = 0.01;
 const SCENARIO_DEFINITIONS = Object.freeze({
   基准: Object.freeze({ revenue: "p50", financeRatio: 1, financeDelayMonths: 1, slow: false, annualRate: 0.08, otherOpexRate: 0.10 }),
   保守收入: Object.freeze({ revenue: "p25", financeRatio: 1, financeDelayMonths: 1, slow: false, annualRate: 0.08, otherOpexRate: 0.10 }),
@@ -66,16 +67,25 @@ function sum(rows, field) {
   return rows.reduce((total, row) => total + row[field], 0);
 }
 
+function boundResidualToPrincipal(residualAmount, financedPrincipal) {
+  if (residualAmount - financedPrincipal > LEASE_BALANCE_TOLERANCE) {
+    throw new RangeError("residual cannot exceed financed principal");
+  }
+  return Math.min(residualAmount, financedPrincipal);
+}
+
 /** Calculates the level monthly rent while separately discounting the final residual payment. */
 export function calculateLeasePayment(principal, originalValue, annualRate, termMonths, residualRate) {
   const financedPrincipal = requireFinite(principal, "principal", { positive: true });
   const assetOriginalValue = requireFinite(originalValue, "originalValue", { positive: true });
   const yearlyRate = requireRate(annualRate, "annualRate");
   const months = requireTerm(termMonths);
-  const residualAmount = assetOriginalValue * requireRate(residualRate, "residualRate");
+  const residualAmount = boundResidualToPrincipal(
+    assetOriginalValue * requireRate(residualRate, "residualRate"),
+    financedPrincipal,
+  );
   const monthlyRate = yearlyRate / 12;
   if (monthlyRate === 0) {
-    if (residualAmount > financedPrincipal) throw new RangeError("residual cannot exceed financed principal");
     return (financedPrincipal - residualAmount) / months;
   }
   const discountFactor = (1 + monthlyRate) ** months;
@@ -96,7 +106,7 @@ export function buildSingleLease(config) {
   if (!Number.isInteger(config.disbursementMonthIndex) || config.disbursementMonthIndex < 0) {
     throw new TypeError("disbursementMonthIndex must be a non-negative integer");
   }
-  const residualAmount = originalValue * residualRate;
+  const residualAmount = boundResidualToPrincipal(originalValue * residualRate, principal);
   const levelRent = calculateLeasePayment(principal, originalValue, annualRate, termMonths, residualRate);
   const monthlyRate = annualRate / 12;
   const payments = [];
@@ -108,7 +118,7 @@ export function buildSingleLease(config) {
     const rawEndingBalance = openingBalance + financeCost - debtService;
     let endingBalance = rawEndingBalance;
     if (period === termMonths) {
-      if (Math.abs(rawEndingBalance) >= 0.01) {
+      if (Math.abs(rawEndingBalance) > LEASE_BALANCE_TOLERANCE) {
         throw new Error(`lease ending balance ${rawEndingBalance} exceeds 0.01 tolerance`);
       }
       endingBalance = 0;

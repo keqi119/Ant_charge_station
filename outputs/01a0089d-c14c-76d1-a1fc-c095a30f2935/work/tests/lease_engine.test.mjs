@@ -90,6 +90,75 @@ test("zero-rate lease spreads financed principal net of residual evenly", () => 
   assert.equal(lease.totalFinanceCost, 0);
 });
 
+test("positive-rate leases reject a residual above financed principal before amortization", () => {
+  assert.throws(
+    () => calculateLeasePayment(80, 100, 0.12, 36, 0.90),
+    /residual.*(exceed|principal)|principal.*residual/i,
+  );
+  assert.throws(
+    () => buildSingleLease({
+      principal: 80,
+      originalValue: 100,
+      annualRate: 0.12,
+      termMonths: 36,
+      residualRate: 0.90,
+      disbursementMonthIndex: 1,
+    }),
+    /residual.*(exceed|principal)|principal.*residual/i,
+  );
+});
+
+test("all approved finance ratios, rates, and terms amortize without negative principal", () => {
+  const financeRatios = [0.8, 0.9, 1];
+  const annualRates = [0.06, 0.08, 0.10, 0.12];
+  const termMonthsOptions = [18, 24, 36];
+  const rents = new Map();
+
+  for (const financeRatio of financeRatios) {
+    for (const annualRate of annualRates) {
+      for (const termMonths of termMonthsOptions) {
+        const [lease] = buildLeaseCohorts([FOUR_GUN_COHORT], {
+          startMonth: START_MONTH,
+          financeRatio,
+          annualRate,
+          termMonths,
+          residualRate: 0.01,
+        });
+        const key = `${financeRatio}/${annualRate}/${termMonths}`;
+        rents.set(key, lease.levelRent);
+        assert.equal(lease.principal, 61000 * financeRatio, key);
+        assert.ok(lease.levelRent > 0, key);
+        assert.equal(lease.payments.length, termMonths, key);
+        assert.ok(lease.payments.every((row) => row.principalRepayment >= -1e-8), key);
+        assert.ok(lease.payments.every((row) => row.financeCost >= 0), key);
+        assert.equal(lease.payments.at(-1).residual, 610, key);
+        assert.equal(lease.payments.at(-1).endingBalance, 0, key);
+        assert.ok(Math.abs(lease.payments.reduce((sum, row) => sum + row.principalRepayment, 0) - lease.principal) < 0.01, key);
+      }
+    }
+  }
+
+  for (const financeRatio of financeRatios) {
+    for (const termMonths of termMonthsOptions) {
+      assert.ok(rents.get(`${financeRatio}/0.06/${termMonths}`) < rents.get(`${financeRatio}/0.08/${termMonths}`));
+      assert.ok(rents.get(`${financeRatio}/0.08/${termMonths}`) < rents.get(`${financeRatio}/0.1/${termMonths}`));
+      assert.ok(rents.get(`${financeRatio}/0.1/${termMonths}`) < rents.get(`${financeRatio}/0.12/${termMonths}`));
+    }
+  }
+  for (const annualRate of annualRates) {
+    for (const termMonths of termMonthsOptions) {
+      assert.ok(rents.get(`0.8/${annualRate}/${termMonths}`) < rents.get(`0.9/${annualRate}/${termMonths}`));
+      assert.ok(rents.get(`0.9/${annualRate}/${termMonths}`) < rents.get(`1/${annualRate}/${termMonths}`));
+    }
+  }
+  for (const financeRatio of financeRatios) {
+    for (const annualRate of annualRates) {
+      assert.ok(rents.get(`${financeRatio}/${annualRate}/36`) < rents.get(`${financeRatio}/${annualRate}/24`));
+      assert.ok(rents.get(`${financeRatio}/${annualRate}/24`) < rents.get(`${financeRatio}/${annualRate}/18`));
+    }
+  }
+});
+
 test("lease cohorts finance eligible basis only and preserve Task 6 inputs", () => {
   const cohorts = [structuredClone(FOUR_GUN_COHORT)];
   const before = structuredClone(cohorts);
