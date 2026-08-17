@@ -94,6 +94,7 @@ export function validateHistoricalRows(rows) {
     const rowNumber = row?.rawRowNumber ?? index + 2;
     if (!(row?.date instanceof Date) || !Number.isFinite(row.date.getTime())) throw new Error(`第${rowNumber}行日期无效`);
     if (typeof row.stationId !== "string" || row.stationId.trim() === "") throw new Error(`第${rowNumber}行站点ID不能为空`);
+    if (typeof row.stationName !== "string" || row.stationName.trim() === "") throw new Error(`第${rowNumber}行站点名称不能为空`);
     for (const field of NUMERIC_FIELDS) {
       if (typeof row[field] !== "number" || !Number.isFinite(row[field])) throw new Error(`第${rowNumber}行${field}不是有效数值`);
       totals[field] += row[field];

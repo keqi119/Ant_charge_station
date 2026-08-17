@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-
 const CITY_TIERS = new Set(["一线", "新一线", "二线", "三线"]);
 const SOURCE_FIELDS = [
   "tierSourceUrl",
@@ -74,10 +72,6 @@ function validateProvenanceCoupling({ hasValue, year, sourceUrl, accessedDate, l
   } else if (year !== null || sourceUrl !== "") {
     throw new Error(`${label.replace(/ (?:pair|value)$/u, "")} null state requires null year and blank source row ${row}`);
   }
-}
-
-export function loadJson(path) {
-  return JSON.parse(readFileSync(path, "utf8"));
 }
 
 export function validateSeasonalityInputs(records) {

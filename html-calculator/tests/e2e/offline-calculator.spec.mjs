@@ -31,6 +31,9 @@ test("shows the approved twelve-page navigation in order", async ({ page }) => {
   ]);
   await expect(page.locator("[data-page-id][aria-current=true]")).toHaveCount(1);
   await expect(page.locator("[data-model-status]")).toContainText(/警告|通过/);
+  await expect(page.locator("[data-solution-name]")).toHaveText("基准方案");
+  await expect(page.locator("[data-model-version]")).toHaveText("html-model-1");
+  await expect(page.locator("[data-last-calculated]")).toHaveText(/\d{4}.*\d{2}:\d{2}/);
   expect(pageErrors).toEqual([]);
 });
 

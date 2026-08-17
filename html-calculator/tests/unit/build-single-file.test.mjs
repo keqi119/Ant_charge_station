@@ -40,10 +40,13 @@ test("release is one self-contained offline HTML", () => {
   const html = readFileSync(RELEASE, "utf8");
   assert.ok(Buffer.byteLength(html) > 500_000);
   assert.doesNotMatch(html, /<(script|link|img)[^>]+(?:src|href)=["']https?:/i);
+  assert.match(html, /Content-Security-Policy[^>]+connect-src 'none'/);
   assert.match(html, /id="embedded-model-data"/);
   assert.match(html, /SheetJS.*Apache-2\.0/s);
   assert.match(html, /Chart\.js.*MIT/s);
   assert.match(html, /esbuild.*MIT/s);
+  assert.match(html, /Apache License\s+Version 2\.0/s);
+  assert.equal((html.match(/Permission is hereby granted, free of charge/g) ?? []).length, 2);
   assert.doesNotMatch(html, /sourceMappingURL/);
   const payload = html.match(/<script type="application\/json" id="embedded-model-data">([\s\S]*?)<\/script>/);
   assert.ok(payload);

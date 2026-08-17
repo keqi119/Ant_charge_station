@@ -97,3 +97,13 @@ test("editable operating and lease assumptions drive the base calculation", () =
   );
   assert.deepEqual(result.termComparison.map((row) => row.termMonths), [18, 24, 36]);
 });
+
+test("city weights must be finite non-negative percentages totaling 100 percent", () => {
+  const state = createBaselineState(loadEmbeddedFixture());
+  state.assumptions.cityWeights.population = -0.1;
+  assert.throws(() => calculateModel(state), /城市权重/);
+
+  const overTotal = createBaselineState(loadEmbeddedFixture());
+  overTotal.assumptions.cityWeights.population = 0.5;
+  assert.throws(() => calculateModel(overTotal), /100%/);
+});

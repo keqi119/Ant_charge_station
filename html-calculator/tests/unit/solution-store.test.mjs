@@ -16,6 +16,7 @@ function fullState() {
     historyRows: readJson("../../data/historical-baseline.json"),
     cityInputs: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/city_inputs.json"),
     seasonalityInputs: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/seasonality_2024.json"),
+    cityAuditManifest: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/city_metric_audit_manifest.json"),
   });
 }
 
@@ -29,10 +30,21 @@ function deleteDatabase(name) {
 
 test("IndexedDB auto-save preserves all 3,049 dated history rows", async () => {
   await deleteDatabase("ant-charge-station-calculator");
-  const store = createSolutionStore(indexedDB);
+  const state = fullState();
+  const store = createSolutionStore(indexedDB, {
+    cityAuditManifest: state.cityAuditManifest,
+    fixedCities: state.fixedCities,
+  });
   assert.equal(await store.load(), null);
 
-  await store.save(fullState());
+  await store.save(state, {
+    audit: {
+      calculatedAt: "2026-08-17T00:00:00.000Z",
+      modelStatus: "WARN",
+      passedChecks: 17,
+      totalChecks: 17,
+    },
+  });
   const loaded = await store.load();
   assert.equal(loaded.history.rows.length, 3049);
   assert.ok(loaded.history.rows[0].date instanceof Date);

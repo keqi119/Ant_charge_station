@@ -5,10 +5,10 @@ import { dirname, join } from "node:path";
 
 import { FIXED_CITIES } from "../model/constants.mjs";
 import {
-  loadJson,
   validateCityInputs,
   validateSeasonalityInputs,
 } from "../model/input_validation.mjs";
+import { loadJson } from "../model/json_file.mjs";
 import * as inputValidation from "../model/input_validation.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));

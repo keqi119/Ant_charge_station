@@ -196,6 +196,15 @@ function sum(rows, field) {
   return rows.reduce((total, row) => total + row[field], 0);
 }
 
+function validateCityWeights(weights) {
+  const keys = Object.keys(DEFAULT_CITY_WEIGHTS);
+  if (!weights || typeof weights !== "object" || keys.some((key) => !Number.isFinite(weights[key]) || weights[key] < 0 || weights[key] > 1)) {
+    throw new Error("城市权重必须是0%至100%的有限非负数");
+  }
+  const total = keys.reduce((value, key) => value + weights[key], 0);
+  if (Math.abs(total - 1) > 1e-9) throw new Error("城市权重合计必须为100%");
+}
+
 /** Creates a mutable browser state from the immutable embedded release data. */
 export function createBaselineState(embeddedData) {
   if (!embeddedData || typeof embeddedData !== "object") throw new TypeError("embedded data is required");
@@ -228,6 +237,7 @@ export function createBaselineState(embeddedData) {
 /** Composes the approved pure engines into one presentation-ready result. */
 export function calculateModel(state) {
   if (!state || typeof state !== "object") throw new TypeError("model state is required");
+  validateCityWeights(state.assumptions?.cityWeights);
   const historical = profileHistoricalRows(state.history.rows, { matureOperatingDays: 30 });
   const seasonality = buildSeasonalityCurve(state.seasonalityInputs);
   const annualServicePerGunDay = annualizePeakBenchmark(

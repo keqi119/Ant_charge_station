@@ -19,6 +19,15 @@ function toolbarButton(action, label, className = "button button-secondary") {
   return `<button type="button" class="${className}" data-action="${action}">${label}</button>`;
 }
 
+function formatCalculatedAt(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "尚未测算";
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  }).format(date);
+}
+
 /** Mounts the fixed-header, left-navigation calculator application shell. */
 export function mountShell(root, appState) {
   if (!(root instanceof HTMLElement)) throw new TypeError("root must be an HTMLElement");
@@ -32,6 +41,11 @@ export function mountShell(root, appState) {
           <div>
             <div class="brand-kicker">ANT CHARGE · UNDERWRITING MODEL</div>
             <div class="brand-title">便民充电站单枪收入与融资租赁测算</div>
+            <div class="brand-meta">
+              <span data-solution-name>基准方案</span>
+              <span data-model-version></span>
+              <time data-last-calculated></time>
+            </div>
           </div>
         </div>
         <div class="header-actions no-print" aria-label="模型操作">
@@ -89,6 +103,20 @@ export function mountShell(root, appState) {
   const validationBanner = root.querySelector("[data-validation-banner]");
   const busyOverlay = root.querySelector("[data-busy-overlay]");
   const progress = root.querySelector("[data-import-progress]");
+  const solutionNameNode = root.querySelector("[data-solution-name]");
+  const modelVersionNode = root.querySelector("[data-model-version]");
+  const lastCalculatedNode = root.querySelector("[data-last-calculated]");
+
+  function updateModelMeta(snapshot) {
+    modelVersionNode.textContent = snapshot.validState?.modelVersion ?? "版本未知";
+    lastCalculatedNode.textContent = formatCalculatedAt(snapshot.lastCalculatedAt);
+    lastCalculatedNode.dateTime = snapshot.lastCalculatedAt ?? "";
+  }
+
+  function setSolutionName(name) {
+    if (typeof name !== "string" || name.trim() === "") throw new Error("方案名称不能为空");
+    solutionNameNode.textContent = name.trim();
+  }
 
   function showPage(pageId, { updateState = true } = {}) {
     if (!PAGES.some((page) => page.id === pageId)) throw new RangeError(`unknown page: ${pageId}`);
@@ -132,12 +160,14 @@ export function mountShell(root, appState) {
 
   const unsubscribe = appState.subscribe((snapshot) => {
     setModelStatus(snapshot.result?.status ?? "FAIL");
+    updateModelMeta(snapshot);
     showPage(snapshot.activePage, { updateState: false });
     validationBanner.hidden = snapshot.validation.status !== "FAIL";
     validationBanner.textContent = snapshot.validation.errors.map((error) => error.message).join("；");
   });
   const initial = appState.getSnapshot();
   setModelStatus(initial.result?.status ?? "FAIL");
+  updateModelMeta(initial);
   showPage(initial.activePage, { updateState: false });
 
   return {
@@ -147,6 +177,7 @@ export function mountShell(root, appState) {
     setBusy,
     setProgress,
     setExternalError,
+    setSolutionName,
     panel(pageId) {
       return root.querySelector(`[data-page-panel="${pageId}"]`);
     },

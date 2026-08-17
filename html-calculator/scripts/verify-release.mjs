@@ -20,8 +20,13 @@ export function verifyRelease(path) {
     throw new Error("release contains external resource tags");
   }
   if (/sourceMappingURL/.test(html)) throw new Error("release contains a source map URL");
+  if (!/Content-Security-Policy[^>]+connect-src 'none'/i.test(html)) throw new Error("release CSP must block network connections");
   for (const notice of ["SheetJS", "Apache-2.0", "Chart.js", "esbuild", "MIT"]) {
     if (!html.includes(notice)) throw new Error(`release is missing ${notice} notice`);
+  }
+  if (!/Apache License\s+Version 2\.0/s.test(html)) throw new Error("release is missing the full Apache-2.0 license");
+  if ((html.match(/Permission is hereby granted, free of charge/g) ?? []).length !== 2) {
+    throw new Error("release is missing the two full MIT licenses");
   }
   const payloadMatch = html.match(/<script type="application\/json" id="embedded-model-data">([\s\S]*?)<\/script>/);
   if (!payloadMatch) throw new Error("embedded model data is missing");

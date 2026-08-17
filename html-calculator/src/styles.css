@@ -54,6 +54,8 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .brand-block { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .brand-kicker { font: 600 10px/1.3 Arial, sans-serif; letter-spacing: .18em; color: #7fd1d2; }
 .brand-title { margin-top: 4px; font-size: 18px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.brand-meta { display: flex; gap: 0; margin-top: 3px; color: #a8c1cd; font-size: 10px; white-space: nowrap; }
+.brand-meta > * + *::before { content: "·"; margin: 0 7px; color: #5f8595; }
 .header-actions { display: flex; gap: 8px; align-items: center; }
 .button {
   min-height: 36px;
@@ -257,6 +259,7 @@ tr[data-status="FAIL"] td:nth-child(3) { color: var(--danger); font-weight: 700;
   .app-header { min-height: 72px; grid-template-columns: 1fr auto; padding: 10px 14px; }
   .brand-title { font-size: 15px; white-space: normal; }
   .brand-kicker { display: none; }
+  .brand-meta { max-width: calc(100vw - 150px); overflow: hidden; text-overflow: ellipsis; }
   .menu-toggle { display: block; }
   .header-actions { display: none; }
   .app-body { display: block; padding-top: 72px; }

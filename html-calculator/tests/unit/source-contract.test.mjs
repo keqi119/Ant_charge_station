@@ -68,9 +68,10 @@ test("rejects an altered schema before parsing any history", () => {
   assert.throws(() => normalizeSourceMatrix([badHeaders, matrixRow()]), /第13列表头/);
 });
 
-test("rejects invalid dates, blank station IDs, and non-positive gun counts", () => {
+test("rejects invalid dates, blank station identity, and non-positive gun counts", () => {
   assert.throws(() => normalizeSourceMatrix([APPROVED_HEADERS, matrixRow({ date: "2026-02-30" })]), /日期/);
   assert.throws(() => validateHistoricalRows(normalizeSourceMatrix([APPROVED_HEADERS, matrixRow({ stationId: "" })])), /站点ID/);
+  assert.throws(() => validateHistoricalRows(normalizeSourceMatrix([APPROVED_HEADERS, matrixRow({ stationName: "" })])), /站点名称/);
   assert.throws(() => validateHistoricalRows(normalizeSourceMatrix([APPROVED_HEADERS, matrixRow({ dcGuns: 0, acGuns: 0 })])), /枪数/);
 });
 

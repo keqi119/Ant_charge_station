@@ -13,7 +13,7 @@ function requestResult(request) {
 }
 
 /** Creates the local-only IndexedDB store used for automatic valid-state saves. */
-export function createSolutionStore(indexedDbFactory = globalThis.indexedDB) {
+export function createSolutionStore(indexedDbFactory = globalThis.indexedDB, validationContext) {
   if (!indexedDbFactory || typeof indexedDbFactory.open !== "function") throw new Error("浏览器不支持IndexedDB");
   let databasePromise;
 
@@ -47,15 +47,15 @@ export function createSolutionStore(indexedDbFactory = globalThis.indexedDB) {
   }
 
   return {
-    async save(state) {
-      const text = serializeSolution(state, { name: "自动保存" });
+    async save(state, options = {}) {
+      const text = serializeSolution(state, { name: "自动保存", ...options });
       await run("readwrite", (store) => requestResult(store.put(text, CURRENT_KEY)));
     },
 
     async load() {
       const text = await run("readonly", (store) => requestResult(store.get(CURRENT_KEY)));
       if (text === undefined) return null;
-      const envelope = parseSolution(text);
+      const envelope = parseSolution(text, validationContext);
       return { modelVersion: envelope.modelVersion, ...envelope.state };
     },
 

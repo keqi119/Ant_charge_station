@@ -83,11 +83,25 @@ function filenameTimestamp(date = new Date()) {
   return `${parts.year}${parts.month}${parts.day}-${parts.hour}${parts.minute}`;
 }
 
+function solutionAudit(snapshot) {
+  const checks = snapshot.result?.checks ?? [];
+  return {
+    calculatedAt: snapshot.lastCalculatedAt,
+    modelStatus: snapshot.result?.status ?? "FAIL",
+    passedChecks: checks.filter((check) => check.status === "PASS").length,
+    totalChecks: checks.length,
+  };
+}
+
 async function bootstrap(root) {
   const baseline = createBaselineState(embeddedData());
   const appState = createAppState(baseline, calculateModel);
   const shell = mountShell(root, appState);
-  const store = createSolutionStore(globalThis.indexedDB);
+  const solutionValidationContext = {
+    cityAuditManifest: baseline.cityAuditManifest,
+    fixedCities: baseline.fixedCities,
+  };
+  const store = createSolutionStore(globalThis.indexedDB, solutionValidationContext);
   renderPlaceholders(shell, appState.getSnapshot());
   const actions = {
     update: (path, value) => appState.update(path, value),
@@ -141,8 +155,9 @@ async function bootstrap(root) {
   function downloadSolution(name = "当前方案") {
     const snapshot = appState.getSnapshot();
     if (snapshot.validation.status !== "PASS") throw new Error("存在未修正的输入错误，不能保存方案");
-    const text = serializeSolution(snapshot.validState, { name });
+    const text = serializeSolution(snapshot.validState, { name, audit: solutionAudit(snapshot) });
     downloadText(text, `充电站融资测算方案-${name}-${filenameTimestamp()}.json`);
+    shell.setSolutionName(name);
   }
 
   async function openSolution(file) {
@@ -150,12 +165,13 @@ async function bootstrap(root) {
     shell.setExternalError("");
     shell.setBusy(true, "正在打开方案…");
     try {
-      const envelope = parseSolution(await file.text());
+      const envelope = parseSolution(await file.text(), solutionValidationContext);
       if (envelope.modelVersion !== baseline.modelVersion) throw new Error("方案模型版本与当前HTML不一致");
       const candidate = mergePortableState(baseline, { modelVersion: envelope.modelVersion, ...envelope.state });
       calculateModel(candidate);
       const promoted = appState.replaceState(candidate);
       if (promoted.validation.status === "FAIL") throw new Error(promoted.validation.errors[0]?.message ?? "方案测算失败");
+      shell.setSolutionName(envelope.name);
       shell.setProgress(`已打开：${envelope.name}`);
     } catch (error) {
       shell.setExternalError(error instanceof Error ? error.message : String(error));
@@ -193,6 +209,7 @@ async function bootstrap(root) {
     shell.resetDialog.close();
     appState.restoreBaseline();
     await store.clear();
+    shell.setSolutionName("基准方案");
     shell.setProgress("已恢复基准方案");
   });
   shell.actionButton("print").addEventListener("click", printActivePage);
@@ -203,6 +220,7 @@ async function bootstrap(root) {
       const restored = mergePortableState(baseline, saved);
       calculateModel(restored);
       appState.replaceState(restored);
+      shell.setSolutionName("自动保存方案");
       shell.setProgress("已恢复本地自动保存");
     }
   } catch (error) {
@@ -214,7 +232,8 @@ async function bootstrap(root) {
     if (snapshot.validation.status !== "PASS") return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      store.save(snapshot.validState).catch((error) => shell.setExternalError(`自动保存失败：${error.message}`));
+      store.save(snapshot.validState, { audit: solutionAudit(snapshot) })
+        .catch((error) => shell.setExternalError(`自动保存失败：${error.message}`));
     }, 300);
   });
 
@@ -225,7 +244,10 @@ async function bootstrap(root) {
     importExcel,
     downloadSolution,
     openSolution,
-    restoreBaseline: () => appState.restoreBaseline(),
+    restoreBaseline: () => {
+      shell.setSolutionName("基准方案");
+      return appState.restoreBaseline();
+    },
     printActivePage,
     destroy: async () => {
       clearTimeout(saveTimer);

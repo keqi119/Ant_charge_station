@@ -1,4 +1,10 @@
 import { validateHistoricalRows } from "../model/source-contract.mjs";
+import { FIXED_CITIES } from "../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/model/constants.mjs";
+import {
+  validateCityInputs,
+  validateCityMetricAuditManifest,
+  validateSeasonalityInputs,
+} from "../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/model/input_validation.mjs";
 
 export const SOLUTION_FORMAT = "ant-charge-station-solution";
 export const SOLUTION_VERSION = 1;
@@ -7,6 +13,63 @@ const APPROVED_ADVANCE_RATES = new Set([0.8, 0.9, 1]);
 const APPROVED_LEASE_RATES = new Set([0.06, 0.08, 0.10, 0.12]);
 const APPROVED_TERMS = new Set([18, 24, 36]);
 const APPROVED_DELAYS = new Set([0, 1, 2]);
+const MODEL_STATUSES = new Set(["PASS", "WARN", "FAIL"]);
+const EXPECTED_CHECK_COUNT = 17;
+
+function requireIsoTimestamp(value, label) {
+  const date = new Date(value);
+  if (typeof value !== "string" || !Number.isFinite(date.getTime()) || date.toISOString() !== value) {
+    throw new Error(`${label}必须为ISO时间`);
+  }
+  return value;
+}
+
+function expectedAuditDetails(state) {
+  return {
+    dataPeriod: {
+      start: state.history.sourceStart,
+      end: state.history.sourceEnd,
+      rows: state.history.rows.length,
+    },
+    inputSummary: {
+      targetGuns: state.assumptions.targetGuns,
+      propertyMode: state.assumptions.propertyMode,
+      leaseAdvanceRate: state.assumptions.leaseAdvanceRate,
+      leaseTermMonths: state.assumptions.leaseTermMonths,
+      annualLeaseRate: state.assumptions.annualLeaseRate,
+      leaseDelayMonths: state.assumptions.leaseDelayMonths,
+    },
+  };
+}
+
+function normalizeAudit(audit, state, { requireDerived = false } = {}) {
+  if (!audit || typeof audit !== "object" || Array.isArray(audit)) throw new Error("方案审计摘要缺失");
+  const calculatedAt = requireIsoTimestamp(audit.calculatedAt, "最近测算时间");
+  if (!MODEL_STATUSES.has(audit.modelStatus)) throw new Error("模型状态无效");
+  if (!Number.isInteger(audit.passedChecks) || audit.passedChecks < 0) throw new Error("通过检查数无效");
+  if (audit.totalChecks !== EXPECTED_CHECK_COUNT || audit.passedChecks > audit.totalChecks) {
+    throw new Error(`检查摘要必须为0至${EXPECTED_CHECK_COUNT}项通过`);
+  }
+
+  const expected = expectedAuditDetails(state);
+  if (requireDerived) {
+    const period = audit.dataPeriod;
+    if (!period || period.start !== expected.dataPeriod.start || period.end !== expected.dataPeriod.end
+      || period.rows !== expected.dataPeriod.rows) throw new Error("方案审计数据期间与明细不一致");
+    const summary = audit.inputSummary;
+    if (!summary || Object.entries(expected.inputSummary).some(([key, value]) => summary[key] !== value)) {
+      throw new Error("方案审计输入摘要与模型假设不一致");
+    }
+  }
+
+  return {
+    calculatedAt,
+    modelStatus: audit.modelStatus,
+    passedChecks: audit.passedChecks,
+    totalChecks: audit.totalChecks,
+    ...expected,
+  };
+}
 
 function requireArray(value, label, { exactLength } = {}) {
   if (!Array.isArray(value)) throw new TypeError(`${label}必须为数组`);
@@ -65,7 +128,19 @@ function restoreHistory(history) {
   if (history.sourceStart !== audit.sourcePeriod.start || history.sourceEnd !== audit.sourcePeriod.end) {
     throw new Error("历史数据期间与明细不一致");
   }
-  return { ...history, rows };
+  if (typeof history.sourceName !== "string" || history.sourceName.trim() === "" || history.sourceName.length > 255) {
+    throw new Error("历史数据来源名称必须为1至255个字符");
+  }
+  return { ...history, sourceName: history.sourceName.trim(), rows };
+}
+
+function validatePortableReferenceData(cityInputs, seasonalityInputs, context) {
+  const fixedCities = context?.fixedCities ?? [...FIXED_CITIES];
+  const manifest = context?.cityAuditManifest;
+  if (!manifest) throw new Error("缺少可信城市审计清单，不能打开方案");
+  validateCityInputs(cityInputs, fixedCities);
+  validateCityMetricAuditManifest(manifest, cityInputs);
+  validateSeasonalityInputs(seasonalityInputs);
 }
 
 export function toPortableState(state) {
@@ -74,6 +149,13 @@ export function toPortableState(state) {
   requireArray(state.cityInputs, "cityInputs");
   requireArray(state.seasonalityInputs, "seasonalityInputs", { exactLength: 13 });
   if (state.cityInputs.length === 0) throw new Error("cityInputs不能为空");
+  validatePortableReferenceData(state.cityInputs, state.seasonalityInputs, {
+    cityAuditManifest: state.cityAuditManifest,
+    fixedCities: state.fixedCities,
+  });
+  if (typeof state.history?.sourceName !== "string" || state.history.sourceName.trim() === "" || state.history.sourceName.length > 255) {
+    throw new Error("历史数据来源名称必须为1至255个字符");
+  }
   const rows = requireArray(state.history?.rows, "历史数据").map((row, index) => ({
     ...row,
     date: dateToIso(row?.date, `历史数据第${index + 1}行`),
@@ -95,18 +177,21 @@ export function serializeSolution(state, options = {}) {
   if (typeof name !== "string" || name.trim() === "") throw new Error("方案名称不能为空");
   const modelVersion = state?.modelVersion;
   if (typeof modelVersion !== "string" || modelVersion.trim() === "") throw new Error("modelVersion缺失");
+  const portableState = toPortableState(state);
+  const audit = normalizeAudit(options.audit, portableState);
   return JSON.stringify({
     format: SOLUTION_FORMAT,
     version: SOLUTION_VERSION,
     savedAt,
     modelVersion,
     name: name.trim(),
-    state: toPortableState(state),
+    audit,
+    state: portableState,
   });
 }
 
 /** Parses and validates a portable solution before it can replace live state. */
-export function parseSolution(text) {
+export function parseSolution(text, validationContext) {
   let envelope;
   try {
     envelope = JSON.parse(text);
@@ -127,18 +212,22 @@ export function parseSolution(text) {
   const cityInputs = requireArray(state.cityInputs, "cityInputs");
   if (cityInputs.length === 0) throw new Error("cityInputs不能为空");
   const seasonalityInputs = requireArray(state.seasonalityInputs, "seasonalityInputs", { exactLength: 13 });
+  validatePortableReferenceData(cityInputs, seasonalityInputs, validationContext);
   const history = restoreHistory(state.history);
+  const restoredState = {
+    assumptions: structuredClone(state.assumptions),
+    cityInputs: structuredClone(cityInputs),
+    seasonalityInputs: structuredClone(seasonalityInputs),
+    history,
+  };
+  const audit = normalizeAudit(envelope.audit, restoredState, { requireDerived: true });
   return {
     format: envelope.format,
     version: envelope.version,
     savedAt: envelope.savedAt,
     modelVersion: envelope.modelVersion,
     name: envelope.name.trim(),
-    state: {
-      assumptions: structuredClone(state.assumptions),
-      cityInputs: structuredClone(cityInputs),
-      seasonalityInputs: structuredClone(seasonalityInputs),
-      history,
-    },
+    audit,
+    state: restoredState,
   };
 }

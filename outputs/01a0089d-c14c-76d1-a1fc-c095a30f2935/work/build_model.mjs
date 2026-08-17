@@ -7,11 +7,11 @@ import { allocateCityTargets, scoreCities } from "./model/city_engine.mjs";
 import { buildDeploymentPlan } from "./model/deployment_engine.mjs";
 import { profileHistoricalRows } from "./model/historical_engine.mjs";
 import {
-  loadJson,
   validateCityInputs,
   validateCityMetricAuditManifest,
   validateSeasonalityInputs,
 } from "./model/input_validation.mjs";
+import { loadJson } from "./model/json_file.mjs";
 import { buildSeasonalityCurve, annualizePeakBenchmark } from "./model/seasonality_engine.mjs";
 import { loadSourceMatrix, normalizeSourceMatrix } from "./model/source_reader.mjs";
 import { buildInputSheets, createWorkbook } from "./model/workbook_inputs.mjs";

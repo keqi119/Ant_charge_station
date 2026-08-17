@@ -8,9 +8,24 @@ export function formatNumber(value, digits = 2) {
 export function pageHeader(container, title, subtitle, status = "PASS") {
   const header = document.createElement("div");
   header.className = "page-heading";
-  header.innerHTML = `
-    <div><div class="eyebrow">MODEL MODULE</div><h1>${title}</h1>${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ""}</div>
-    <span class="status-chip" data-status="${status}">${status === "FAIL" ? "失败" : status === "WARN" ? "警告" : "通过"}</span>`;
+  const copy = document.createElement("div");
+  const eyebrow = document.createElement("div");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "MODEL MODULE";
+  const heading = document.createElement("h1");
+  heading.textContent = String(title ?? "");
+  copy.append(eyebrow, heading);
+  if (subtitle) {
+    const paragraph = document.createElement("p");
+    paragraph.className = "page-subtitle";
+    paragraph.textContent = String(subtitle);
+    copy.append(paragraph);
+  }
+  const chip = document.createElement("span");
+  chip.className = "status-chip";
+  chip.dataset.status = status;
+  chip.textContent = status === "FAIL" ? "失败" : status === "WARN" ? "警告" : "通过";
+  header.append(copy, chip);
   container.append(header);
 }
 

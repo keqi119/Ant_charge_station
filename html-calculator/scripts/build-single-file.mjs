@@ -50,7 +50,16 @@ function loadJsonIfPresent(path, fallback) {
 export async function buildRelease() {
   const template = readFileSync(join(PROJECT, "src", "index.template.html"), "utf8");
   const css = readFileSync(join(PROJECT, "src", "styles.css"), "utf8");
-  const thirdPartyNotices = readFileSync(join(PROJECT, "data", "third-party-notices.txt"), "utf8");
+  const noticeIndex = readFileSync(join(PROJECT, "data", "third-party-notices.txt"), "utf8");
+  const thirdPartyNotices = [
+    noticeIndex,
+    "\n===== SheetJS Community Edition (xlsx) — Apache-2.0 full license =====\n",
+    readFileSync(join(PROJECT, "node_modules", "xlsx", "LICENSE"), "utf8"),
+    "\n===== Chart.js — MIT full license =====\n",
+    readFileSync(join(PROJECT, "node_modules", "chart.js", "LICENSE.md"), "utf8"),
+    "\n===== esbuild — MIT full license =====\n",
+    readFileSync(join(PROJECT, "node_modules", "esbuild", "LICENSE.md"), "utf8"),
+  ].join("\n");
   const bundle = await build({
     entryPoints: [join(PROJECT, "src", "main.mjs")],
     bundle: true,
