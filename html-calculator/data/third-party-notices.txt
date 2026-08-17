@@ -1,0 +1,10 @@
+THIRD-PARTY NOTICES
+
+SheetJS Community Edition (xlsx) — Apache-2.0
+Copyright SheetJS LLC and contributors.
+
+Chart.js — MIT
+Copyright Chart.js Contributors.
+
+esbuild — MIT
+Copyright Evan Wallace and contributors.
