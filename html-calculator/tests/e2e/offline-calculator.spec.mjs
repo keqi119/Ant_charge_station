@@ -1,6 +1,23 @@
-import { expect, test } from "@playwright/test";
+import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import * as XLSX from "xlsx";
 
-import { releaseFileUrl } from "./helpers.mjs";
+import { APPROVED_HEADERS } from "../../src/model/source-contract.mjs";
+import { expect, releaseFileUrl, test } from "./helpers.mjs";
+
+const fixture = (name) => resolve(import.meta.dirname, `../fixtures/${name}`);
+
+function baselineWorkbookBuffer() {
+  const rows = JSON.parse(readFileSync(new URL("../../data/historical-baseline.json", import.meta.url), "utf8"));
+  const matrix = [APPROVED_HEADERS, ...rows.map((row) => [
+    row.date, row.stationId, row.stationName, row.dcGuns, row.acGuns, row.orders,
+    row.kwh, row.sharpKwh, row.peakKwh, row.flatKwh, row.valleyKwh, row.minutes,
+    row.gross, row.electricityFee, row.serviceFee, "2026-08-15",
+  ])];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(matrix), "Data List");
+  return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+}
 
 test("shows the approved twelve-page navigation in order", async ({ page }) => {
   const pageErrors = [];
@@ -60,4 +77,34 @@ test("linked edits fail atomically and valid city weights recalculate allocation
   await page.locator("[data-page-id=city-allocation]").click();
   await expect(page.locator("[data-allocation-total]")).toHaveText("30,000");
   await expect(page.locator("[data-city-order-signature]")).not.toHaveText(before);
+});
+
+test("stays offline and meets the release performance budgets", async ({ page }) => {
+  const loadStarted = Date.now();
+  await page.goto(releaseFileUrl);
+  await expect(page.locator("[data-kpi=targetGuns]")).toHaveText("30,000");
+  const loadMs = Date.now() - loadStarted;
+  expect(loadMs).toBeLessThan(5_000);
+
+  await page.locator("[data-page-id=assumptions]").click();
+  const recalcStarted = Date.now();
+  await page.locator("[data-path='assumptions.targetGuns']").fill("30002");
+  await page.locator("[data-page-id=city-allocation]").click();
+  await expect(page.locator("[data-allocation-total]")).toHaveText("30,002");
+  const recalcMs = Date.now() - recalcStarted;
+  expect(recalcMs).toBeLessThan(1_000);
+
+  const importStarted = Date.now();
+  await page.locator("[data-file-input=excel]").setInputFiles({
+    name: "baseline-3049.xlsx",
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: baselineWorkbookBuffer(),
+  });
+  await expect(page.locator("[data-import-progress]")).toContainText("完成");
+  await page.locator("[data-page-id=historical-raw]").click();
+  await expect(page.locator("[data-history-row-count]")).toHaveText("3,049");
+  const importMs = Date.now() - importStarted;
+  expect(importMs).toBeLessThan(10_000);
+  console.log(`PERFORMANCE ${test.info().project.name} load=${loadMs}ms recalc=${recalcMs}ms import3049=${importMs}ms`);
+  test.info().annotations.push({ type: "performance", description: JSON.stringify({ loadMs, recalcMs, importMs }) });
 });

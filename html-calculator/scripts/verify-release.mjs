@@ -3,6 +3,10 @@ import { extname, resolve } from "node:path";
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const MIN_BYTES = 500_000;
+const DEFAULT_RELEASE = resolve(
+  import.meta.dirname,
+  "../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/便民充电站单枪收入与融资租赁测算.html",
+);
 
 export function verifyRelease(path) {
   const absolute = resolve(path);
@@ -37,7 +41,6 @@ export function verifyRelease(path) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
-  const path = process.argv[2];
-  if (!path) throw new Error("usage: node verify-release.mjs <release.html>");
+  const path = process.argv[2] ?? DEFAULT_RELEASE;
   process.stdout.write(`${JSON.stringify(verifyRelease(path))}\n`);
 }

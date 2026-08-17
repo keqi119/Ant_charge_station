@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { buildHtml } from "../../scripts/build-single-file.mjs";
+import playwrightConfig from "../../playwright.config.mjs";
 
 const RELEASE = fileURLToPath(new URL(
   "../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/便民充电站单枪收入与融资租赁测算.html",
@@ -51,4 +52,12 @@ test("release is one self-contained offline HTML", () => {
   assert.equal(embedded.historyRows.length, 3049);
   assert.equal(embedded.cityInputs.length, 56);
   assert.equal(embedded.seasonalityInputs.length, 13);
+});
+
+test("release verification covers installed Chrome and Edge", () => {
+  assert.deepEqual(playwrightConfig.projects.map((project) => project.name), ["chrome", "edge"]);
+  for (const project of playwrightConfig.projects) {
+    assert.equal(project.use.browserName, "chromium");
+    assert.match(project.use.launchOptions.executablePath, /(chrome|msedge)\.exe$/i);
+  }
 });

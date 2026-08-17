@@ -1,7 +1,6 @@
-import { expect, test } from "@playwright/test";
 import { resolve } from "node:path";
 
-import { releaseFileUrl } from "./helpers.mjs";
+import { expect, releaseFileUrl, test } from "./helpers.mjs";
 
 const fixture = (name) => resolve(import.meta.dirname, `../fixtures/${name}`);
 
