@@ -3,7 +3,7 @@
 ## 发布标识
 
 - 验证日期：2026-08-17（Asia/Shanghai）
-- 已验证源码提交：`13120570a50722089594a4e64552d0cd0f2c6e14`
+- 已验证源码提交：`baf3817f060d5e045f3607e7ca46b46eeac553f8`
 - 成品路径：`outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/便民充电站单枪收入与融资租赁测算.html`
 - 文件大小：1,807,982 bytes
 - SHA-256：`DC22DEF313AFA6C4CABC79B2DA6FFEBFCE8CBAA0A8C0034AC067D9A744C11CED`
@@ -14,7 +14,7 @@
 
 - `npm ci`：PASS，17 个依赖包从锁文件安装。
 - `npm run verify`：exit 0。
-- Node 单元测试：25/25 PASS。
+- Node 单元测试：26/26 PASS。
 - Chrome 端到端：12/12 PASS。
 - Edge 端到端：12/12 PASS。
 - 既有纯计算引擎回归：46/46 PASS。
