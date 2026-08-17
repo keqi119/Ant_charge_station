@@ -77,6 +77,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .model-status[data-status="PASS"] { color: #8ee4c1; }
 .model-status[data-status="WARN"] { color: #ffd978; }
 .model-status[data-status="FAIL"] { color: #ffaaa2; }
+.progress-toast { position: fixed; top: 86px; right: 24px; z-index: 30; min-width: 180px; padding: 10px 14px; border-left: 4px solid #49b8b9; color: white; background: var(--navy-800); box-shadow: var(--shadow); font-size: 12px; }
 .menu-toggle { display: none; border: 0; color: white; background: transparent; font-size: 24px; }
 
 .app-body { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; padding-top: 78px; }
@@ -235,6 +236,15 @@ tr[data-status="FAIL"] td:nth-child(3) { color: var(--danger); font-weight: 700;
 .spinner { width: 18px; height: 18px; border: 2px solid rgb(255 255 255 / 30%); border-top-color: #65d6d7; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { rotate: 360deg; } }
 .fatal-error { max-width: 720px; margin: 80px auto; padding: 28px; border-left: 5px solid var(--danger); background: white; box-shadow: var(--shadow); }
+.reset-dialog { width: min(520px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 5px; color: var(--navy-900); box-shadow: 0 24px 80px rgb(0 0 0 / 32%); }
+.reset-dialog::backdrop { background: rgb(4 19 29 / 60%); }
+.reset-dialog form { padding: 26px; }
+.dialog-kicker { color: var(--teal-600); font: 700 10px/1.2 Arial, sans-serif; letter-spacing: .16em; }
+.reset-dialog h2 { margin: 8px 0 10px; }
+.reset-dialog p { margin: 0; color: #657884; font-size: 13px; line-height: 1.7; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.dialog-secondary { color: var(--navy-800); border-color: #b8c6ce; background: white; }
+.dialog-danger { color: white; border-color: var(--danger); background: var(--danger); }
 
 @media (max-width: 1180px) {
   .app-header { grid-template-columns: 1fr auto; }

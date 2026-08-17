@@ -39,3 +39,19 @@ test("debt and downside risk remain visible without fake DSCR values", async ({ 
   await expect(page.locator("[data-warning-list]")).toContainText("经营税率当前为0");
   await expect(page.locator("canvas[data-chart-id]")).toHaveCount(5);
 });
+
+test("print action targets only the active page", async ({ page }) => {
+  await page.goto(releaseFileUrl);
+  await page.evaluate(() => {
+    globalThis.__printCalled = 0;
+    globalThis.print = () => {
+      globalThis.__printCalled += 1;
+      globalThis.__printPage = document.body.dataset.printPage;
+      globalThis.dispatchEvent(new Event("afterprint"));
+    };
+  });
+  await page.locator("[data-action=print]").click();
+  await expect.poll(() => page.evaluate(() => globalThis.__printCalled)).toBe(1);
+  expect(await page.evaluate(() => globalThis.__printPage)).toBe("summary");
+  await expect(page.locator("body")).not.toHaveAttribute("data-print-page");
+});

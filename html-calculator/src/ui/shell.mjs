@@ -40,8 +40,11 @@ export function mountShell(root, appState) {
           ${toolbarButton("open-solution", "打开方案")}
           ${toolbarButton("restore-baseline", "恢复基准")}
           ${toolbarButton("print", "打印/PDF")}
+          <input type="file" data-file-input="excel" accept=".xlsx,.xls" hidden>
+          <input type="file" data-file-input="solution" accept="application/json,.json" hidden>
         </div>
         <div class="model-status" data-model-status data-status="WARN">⚠ 警告</div>
+        <div class="progress-toast" data-import-progress role="status" aria-live="polite" hidden></div>
       </header>
       <div class="app-body">
         <aside class="app-sidebar" aria-label="测算模块导航">
@@ -64,6 +67,17 @@ export function mountShell(root, appState) {
       <div class="busy-overlay" data-busy-overlay hidden role="status" aria-live="polite">
         <div class="busy-card"><span class="spinner" aria-hidden="true"></span><span data-busy-text>正在重新测算…</span></div>
       </div>
+      <dialog class="reset-dialog" data-reset-dialog>
+        <form method="dialog">
+          <div class="dialog-kicker">RESTORE BASELINE</div>
+          <h2>恢复已批准的基准方案？</h2>
+          <p>当前输入、导入的历史数据和自动保存将被基准方案替换。您仍可先保存方案文件。</p>
+          <div class="dialog-actions">
+            <button type="button" class="button dialog-secondary" data-action="cancel-reset">取消</button>
+            <button type="button" class="button dialog-danger" data-action="confirm-reset">确认恢复</button>
+          </div>
+        </form>
+      </dialog>
     </div>`;
 
   const navButtons = [...root.querySelectorAll("[data-page-id]")];
@@ -74,6 +88,7 @@ export function mountShell(root, appState) {
   const statusNode = root.querySelector("[data-model-status]");
   const validationBanner = root.querySelector("[data-validation-banner]");
   const busyOverlay = root.querySelector("[data-busy-overlay]");
+  const progress = root.querySelector("[data-import-progress]");
 
   function showPage(pageId, { updateState = true } = {}) {
     if (!PAGES.some((page) => page.id === pageId)) throw new RangeError(`unknown page: ${pageId}`);
@@ -98,6 +113,16 @@ export function mountShell(root, appState) {
     root.setAttribute("aria-busy", String(Boolean(busy)));
   }
 
+  function setProgress(message) {
+    progress.hidden = !message;
+    progress.textContent = message ?? "";
+  }
+
+  function setExternalError(message) {
+    validationBanner.hidden = !message;
+    validationBanner.textContent = message ?? "";
+  }
+
   for (const button of navButtons) button.addEventListener("click", () => showPage(button.dataset.pageId));
   menuToggle.addEventListener("click", () => {
     const open = sidebar.dataset.open !== "true";
@@ -120,12 +145,18 @@ export function mountShell(root, appState) {
     showPage,
     setModelStatus,
     setBusy,
+    setProgress,
+    setExternalError,
     panel(pageId) {
       return root.querySelector(`[data-page-panel="${pageId}"]`);
     },
     actionButton(action) {
       return root.querySelector(`[data-action="${action}"]`);
     },
+    fileInput(kind) {
+      return root.querySelector(`[data-file-input="${kind}"]`);
+    },
+    resetDialog: root.querySelector("[data-reset-dialog]"),
     destroy() {
       unsubscribe();
       root.replaceChildren();
