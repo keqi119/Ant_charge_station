@@ -1,0 +1,20 @@
+{
+  "name": "ant-charge-station-html-calculator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "build": "node scripts/build-single-file.mjs",
+    "test:e2e": "playwright test",
+    "verify": "npm run test:unit && npm run build && npm run test:e2e"
+  },
+  "dependencies": {
+    "chart.js": "4.5.1",
+    "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "esbuild": "0.28.2",
+    "fake-indexeddb": "6.2.5"
+  }
+}

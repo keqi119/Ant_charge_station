@@ -3,3 +3,6 @@ outputs/**/work/node_modules/
 outputs/**/work/previews/
 outputs/**/work/*.log
 .worktrees/
+html-calculator/node_modules/
+html-calculator/test-results/
+html-calculator/playwright-report/

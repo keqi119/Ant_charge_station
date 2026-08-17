@@ -1,0 +1,14 @@
+{
+  "targetGuns": 30000,
+  "totalInvestment": 640300000,
+  "threeYearServiceFee": 1547192645.96,
+  "threeYearCfads": 1083034852.17,
+  "leaseDisbursement": 543300000,
+  "peakFundingGap": 229020.49,
+  "peakFundingGapMonth": "2026-11",
+  "fullCycleDscr": 3.2105203463,
+  "minimumMonthlyDscr": 1.8550933515,
+  "threeYearLeaseBalance": 141715483.68,
+  "moneyTolerance": 0.02,
+  "ratioTolerance": 0.000001
+}
