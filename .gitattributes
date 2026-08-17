@@ -1,0 +1,2 @@
+# Published standalone artifacts must remain byte-for-byte reproducible on Windows.
+outputs/**/*.html -text

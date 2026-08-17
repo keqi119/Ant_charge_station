@@ -36,6 +36,18 @@ test("buildHtml escapes script-breaking characters inside embedded JSON", () => 
   assert.match(html, /\\u2028\\u2029/);
 });
 
+test("buildHtml normalizes Windows line endings for reproducible release bytes", () => {
+  const html = buildHtml({
+    template: "<!doctype html>\r\n<!-- INLINE_STYLE -->\r\n<!-- EMBEDDED_DATA -->\r\n<!-- INLINE_SCRIPT -->\r\n<!-- THIRD_PARTY_NOTICES -->",
+    css: "body {\r\n  color: #123;\r\n}",
+    javascript: "globalThis.ready = true;\r\n",
+    embeddedData: { ready: true },
+    thirdPartyNotices: "license line one\r\nlicense line two\r\n",
+  });
+
+  assert.doesNotMatch(html, /\r/);
+});
+
 test("release is one self-contained offline HTML", () => {
   const html = readFileSync(RELEASE, "utf8");
   assert.ok(Buffer.byteLength(html) > 500_000);

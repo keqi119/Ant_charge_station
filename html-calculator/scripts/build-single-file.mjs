@@ -29,17 +29,21 @@ function escapeHtml(value) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
+function normalizeNewlines(value) {
+  return value.replace(/\r\n?/g, "\n");
+}
+
 export function buildHtml({ template, css, javascript, embeddedData, thirdPartyNotices = "" }) {
-  return template
-    .replace("<!-- INLINE_STYLE -->", `<style>${css}</style>`)
+  return normalizeNewlines(template)
+    .replace("<!-- INLINE_STYLE -->", `<style>${normalizeNewlines(css)}</style>`)
     .replace(
       "<!-- EMBEDDED_DATA -->",
       `<script type="application/json" id="embedded-model-data">${safeJson(embeddedData)}</script>`,
     )
-    .replace("<!-- INLINE_SCRIPT -->", `<script>${javascript}</script>`)
+    .replace("<!-- INLINE_SCRIPT -->", `<script>${normalizeNewlines(javascript)}</script>`)
     .replace(
       "<!-- THIRD_PARTY_NOTICES -->",
-      `<section id="third-party-notices" hidden aria-hidden="true"><pre>${escapeHtml(thirdPartyNotices)}</pre></section>`,
+      `<section id="third-party-notices" hidden aria-hidden="true"><pre>${escapeHtml(normalizeNewlines(thirdPartyNotices))}</pre></section>`,
     );
 }
 
