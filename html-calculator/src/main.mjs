@@ -9,8 +9,13 @@ import * as stationCostPage from "./ui/pages/station-cost.mjs";
 import * as historicalRawPage from "./ui/pages/historical-raw.mjs";
 import * as historicalModelPage from "./ui/pages/historical-model.mjs";
 import * as seasonalityPage from "./ui/pages/seasonality.mjs";
+import * as summaryPage from "./ui/pages/summary.mjs";
+import * as operationsPage from "./ui/pages/operations.mjs";
+import * as leasePage from "./ui/pages/lease.mjs";
+import * as scenariosChecksSourcesPage from "./ui/pages/scenarios-checks-sources.mjs";
 
 const PAGE_RENDERERS = Object.freeze({
+  summary: summaryPage,
   assumptions: assumptionsPage,
   "city-database": cityDatabasePage,
   "city-allocation": cityAllocationPage,
@@ -19,6 +24,9 @@ const PAGE_RENDERERS = Object.freeze({
   "historical-raw": historicalRawPage,
   "historical-model": historicalModelPage,
   seasonality: seasonalityPage,
+  operations: operationsPage,
+  lease: leasePage,
+  "scenarios-checks-sources": scenariosChecksSourcesPage,
 });
 
 function embeddedData() {

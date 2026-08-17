@@ -113,6 +113,8 @@ export function renderDataTable(config) {
     tbody.replaceChildren();
     for (const row of visible) {
       const tr = document.createElement("tr");
+      const attributes = config.rowAttributes?.(row) ?? {};
+      for (const [name, value] of Object.entries(attributes)) tr.setAttribute(name, value === "" ? "" : String(value));
       for (const column of config.columns ?? []) {
         const td = document.createElement("td");
         const value = column.format ? column.format(row[column.key], row) : row[column.key];
