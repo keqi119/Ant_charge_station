@@ -1,8 +1,9 @@
 function rangeText(config) {
   if (config.range) return config.range;
   const limits = [];
-  if (config.min !== undefined) limits.push(`最小 ${config.min}`);
-  if (config.max !== undefined) limits.push(`最大 ${config.max}`);
+  const displayLimit = (value) => config.type === "percent" ? `${Number((value * 100).toFixed(6))}%` : value;
+  if (config.min !== undefined) limits.push(`最小 ${displayLimit(config.min)}`);
+  if (config.max !== undefined) limits.push(`最大 ${displayLimit(config.max)}`);
   return limits.join(" · ");
 }
 
@@ -35,7 +36,7 @@ export function renderControl(config) {
   } else {
     field = document.createElement("input");
     field.type = config.type === "month" ? "month" : "number";
-    const displayed = config.type === "percent" ? config.value * 100 : config.value;
+    const displayed = config.type === "percent" ? Number((config.value * 100).toFixed(6)) : config.value;
     field.value = displayed ?? "";
     if (config.min !== undefined) field.min = config.type === "percent" ? config.min * 100 : config.min;
     if (config.max !== undefined) field.max = config.type === "percent" ? config.max * 100 : config.max;

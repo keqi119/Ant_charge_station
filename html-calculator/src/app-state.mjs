@@ -13,6 +13,18 @@ function setAtPath(target, path, value) {
   cursor[parts.at(-1)] = value;
 }
 
+function friendlyMessage(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  const translations = [
+    [/targetGuns must be a non-negative even integer/i, "目标枪数必须为非负偶数"],
+    [/guns must be a non-negative even integer/i, "枪数必须为非负偶数"],
+    [/shares must sum to 100%/i, "投放曲线合计必须等于100%"],
+    [/residual cannot exceed financed principal/i, "留购款不能超过融资本金"],
+    [/candidate capacity cannot satisfy targetGuns/i, "候选城市容量无法满足目标枪数"],
+  ];
+  return translations.find(([pattern]) => pattern.test(message))?.[1] ?? message;
+}
+
 /** Maintains separate draft and last-valid states so invalid edits never erase results. */
 export function createAppState(initialState, calculate) {
   if (!initialState || typeof initialState !== "object") throw new TypeError("initialState is required");
@@ -48,7 +60,7 @@ export function createAppState(initialState, calculate) {
     } catch (error) {
       validation = {
         status: "FAIL",
-        errors: [{ path: errorPath, message: error instanceof Error ? error.message : String(error) }],
+        errors: [{ path: errorPath, message: friendlyMessage(error) }],
       };
     }
     return notify();
