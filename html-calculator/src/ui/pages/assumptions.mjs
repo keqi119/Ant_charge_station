@@ -62,6 +62,13 @@ export function render(container, { snapshot, actions }) {
   deployment.append(total);
   container.append(deployment);
 
+  const demolition = card("拆站与迁建", "按期望值分摊至各投放批次；每站最多拆迁一次，拆站当月停运，次月迁建上线并重新从首月爬坡。设备复用，工程及渠道费用重新投入且不新增融资。当前基准为10%、运营2个月后拆站。");
+  addControls(demolition, [
+    { path: "assumptions.demolitionRate", label: "建成后拆站概率", type: "percent", min: 0, max: 1, step: 0.01, range: "0%–100%，全项目按期望值计算" },
+    { path: "assumptions.operatingMonthsBeforeDemolition", label: "拆站前实际运营月数", type: "number", unit: "月", min: 0, max: 60, step: 1, range: "整数；拆站当月停运1个月" },
+  ], snapshot, actions);
+  container.append(demolition);
+
   const revenue = card("收入、爬坡与物业", "物业按月租或服务费分成二选一；总部费用和经营税为0时保留尽调警示。");
   addControls(revenue, [
     { path: "assumptions.propertyMode", label: "物业结算方式", type: "select", options: ["分成", "固定"], range: "二选一，不叠加" },

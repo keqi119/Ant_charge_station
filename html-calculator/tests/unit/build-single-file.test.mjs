@@ -16,12 +16,12 @@ test("buildHtml produces one runnable Chinese document with every payload inline
     template,
     css: "body{color:#123}",
     javascript: "globalThis.__appReady=true;",
-    embeddedData: { metadata: { modelVersion: "html-model-1" } },
+    embeddedData: { metadata: { modelVersion: "html-model-2" } },
   });
 
   assert.match(html, /<style>body\{color:#123\}<\/style>/);
   assert.match(html, /<script type="application\/json" id="embedded-model-data">/);
-  assert.match(html, /"modelVersion":"html-model-1"/);
+  assert.match(html, /"modelVersion":"html-model-2"/);
   assert.match(html, /<script>globalThis\.__appReady=true;<\/script>/);
   assert.doesNotMatch(html, /INLINE_STYLE|EMBEDDED_DATA|INLINE_SCRIPT/);
   assert.match(html, /lang="zh-CN"/);

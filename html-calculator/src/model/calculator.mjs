@@ -67,6 +67,8 @@ function scenarioInputs(state, allocations, seasonality, annualServicePerGunDay,
       financeDelayMonths: a.leaseDelayMonths,
       expectedFixedCities: state.fixedCities,
       costByStationType: a.costByStationType,
+      demolitionRate: a.demolitionRate,
+      operatingMonthsBeforeDemolition: a.operatingMonthsBeforeDemolition,
     },
     operationsConfig: {
       startMonth: a.modelStartMonth,
@@ -165,6 +167,8 @@ function runCustomBase(inputs) {
       otherOpexRate: inputs.operationsConfig.otherOpexRate,
       headquartersMonthly: inputs.operationsConfig.headquartersMonthly,
       operatingTaxRate: inputs.operationsConfig.operatingTaxRate,
+      demolitionRate: inputs.deploymentConfig.demolitionRate,
+      operatingMonthsBeforeDemolition: inputs.deploymentConfig.operatingMonthsBeforeDemolition,
     },
     plan,
     operations,
@@ -177,9 +181,16 @@ function runCustomBase(inputs) {
 
 function extractKpis(base, allocations) {
   const firstThirtySix = base.waterfall.monthly.slice(0, 36);
+  const demolition = base.plan.demolitionSummary ?? {};
+  const originalInvestment = sum(base.plan.cohorts, "totalCapex");
   return {
     targetGuns: sum(allocations, "targetGuns"),
-    totalInvestment: sum(base.plan.cohorts, "totalCapex"),
+    totalInvestment: originalInvestment + (demolition.relocationCapex ?? 0),
+    originalInvestment,
+    expectedDemolishedStations: demolition.expectedDemolishedStations ?? 0,
+    expectedDemolishedGuns: demolition.expectedDemolishedGuns ?? 0,
+    reusableEquipmentValue: demolition.reusableEquipmentValue ?? 0,
+    relocationCapex: demolition.relocationCapex ?? 0,
     threeYearServiceFee: sum(firstThirtySix, "serviceFee"),
     threeYearCfads: sum(firstThirtySix, "cfads"),
     leaseDisbursement: sum(base.leases, "principal"),
@@ -205,12 +216,24 @@ function validateCityWeights(weights) {
   if (Math.abs(total - 1) > 1e-9) throw new Error("城市权重合计必须为100%");
 }
 
+function validateDemolitionAssumptions(assumptions) {
+  if (!Number.isFinite(assumptions?.demolitionRate)
+    || assumptions.demolitionRate < 0 || assumptions.demolitionRate > 1) {
+    throw new Error("拆站概率必须为0%至100%");
+  }
+  if (!Number.isInteger(assumptions.operatingMonthsBeforeDemolition)
+    || assumptions.operatingMonthsBeforeDemolition < 0
+    || assumptions.operatingMonthsBeforeDemolition > 60) {
+    throw new Error("拆站前实际运营月数必须为0至60个月整数");
+  }
+}
+
 /** Creates a mutable browser state from the immutable embedded release data. */
 export function createBaselineState(embeddedData) {
   if (!embeddedData || typeof embeddedData !== "object") throw new TypeError("embedded data is required");
   const historyRows = restoreHistoricalRows(embeddedData.historyRows);
   const historyAudit = validateHistoricalRows(historyRows);
-  const modelVersion = embeddedData.metadata?.modelVersion ?? "html-model-1";
+  const modelVersion = embeddedData.metadata?.modelVersion ?? "html-model-2";
   return {
     modelVersion,
     fixedCities: [...FIXED_CITIES],
@@ -238,6 +261,7 @@ export function createBaselineState(embeddedData) {
 export function calculateModel(state) {
   if (!state || typeof state !== "object") throw new TypeError("model state is required");
   validateCityWeights(state.assumptions?.cityWeights);
+  validateDemolitionAssumptions(state.assumptions);
   const historical = profileHistoricalRows(state.history.rows, { matureOperatingDays: 30 });
   const seasonality = buildSeasonalityCurve(state.seasonalityInputs);
   const annualServicePerGunDay = annualizePeakBenchmark(

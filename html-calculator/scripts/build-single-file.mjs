@@ -81,7 +81,7 @@ export async function buildRelease() {
   validateCityMetricAuditManifest(cityAuditManifest, cityInputs);
   const embeddedData = {
     metadata: {
-      modelVersion: "html-model-1",
+      modelVersion: "html-model-2",
       pages: [
         "融资摘要", "核心假设", "城市数据库", "城市分配", "月度投放计划", "单站成本",
         "历史原始数据", "历史单枪模型", "年度季节曲线", "36月运营模型",

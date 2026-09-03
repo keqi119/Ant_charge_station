@@ -122,7 +122,40 @@ export function projectOperations(cohorts, config) {
         ?? 1,
       `city revenue adjustment for ${cohort.city ?? cohort.cohortId ?? index + 1}`,
     );
-    return { ...cohort, onlineMonthIndex, propertyMode, cityRevenueAdjustment };
+    const expectedDemolishedGuns = requireFinite(
+      cohort.expectedDemolishedGuns ?? 0,
+      `expected demolished guns for ${cohort.cohortId ?? index + 1}`,
+    );
+    const expectedDemolishedStations = requireFinite(
+      cohort.expectedDemolishedStations ?? 0,
+      `expected demolished stations for ${cohort.cohortId ?? index + 1}`,
+    );
+    if (expectedDemolishedGuns > cohort.guns || expectedDemolishedStations > cohort.stations) {
+      throw new RangeError(`demolition exposure cannot exceed cohort ${index + 1}`);
+    }
+    let demolitionMonthIndex = null;
+    let redeploymentOnlineMonthIndex = null;
+    if (expectedDemolishedGuns > 0 || expectedDemolishedStations > 0) {
+      demolitionMonthIndex = requireMonth(cohort.demolitionMonth, `cohort ${index + 1} demolitionMonth`);
+      redeploymentOnlineMonthIndex = requireMonth(
+        cohort.redeploymentOnlineMonth,
+        `cohort ${index + 1} redeploymentOnlineMonth`,
+      );
+      if (demolitionMonthIndex < onlineMonthIndex
+        || redeploymentOnlineMonthIndex !== demolitionMonthIndex + 1) {
+        throw new Error(`cohort ${index + 1} demolition and redeployment timing is invalid`);
+      }
+    }
+    return {
+      ...cohort,
+      onlineMonthIndex,
+      propertyMode,
+      cityRevenueAdjustment,
+      expectedDemolishedGuns,
+      expectedDemolishedStations,
+      demolitionMonthIndex,
+      redeploymentOnlineMonthIndex,
+    };
   });
 
   const cohortMonths = [];
@@ -139,9 +172,28 @@ export function projectOperations(cohorts, config) {
     for (const cohort of normalizedCohorts) {
       if (currentMonthIndex < cohort.onlineMonthIndex) continue;
       const operatingAge = currentMonthIndex - cohort.onlineMonthIndex + 1;
-      const rampFactor = ramp[Math.min(operatingAge - 1, ramp.length - 1)];
-      const serviceFee = cohort.guns * annualServicePerGunDay * days * seasonality
-        * rampFactor * cohort.cityRevenueAdjustment;
+      const originalRampFactor = ramp[Math.min(operatingAge - 1, ramp.length - 1)];
+      const stableGuns = cohort.guns - cohort.expectedDemolishedGuns;
+      const stableStations = cohort.stations - cohort.expectedDemolishedStations;
+      const beforeDemolition = cohort.demolitionMonthIndex === null
+        || currentMonthIndex < cohort.demolitionMonthIndex;
+      const afterRedeployment = cohort.redeploymentOnlineMonthIndex !== null
+        && currentMonthIndex >= cohort.redeploymentOnlineMonthIndex;
+      const redeploymentAge = afterRedeployment
+        ? currentMonthIndex - cohort.redeploymentOnlineMonthIndex + 1
+        : null;
+      const redeploymentRampFactor = redeploymentAge === null
+        ? 0
+        : ramp[Math.min(redeploymentAge - 1, ramp.length - 1)];
+      const affectedActiveGuns = beforeDemolition || afterRedeployment ? cohort.expectedDemolishedGuns : 0;
+      const affectedActiveStations = beforeDemolition || afterRedeployment ? cohort.expectedDemolishedStations : 0;
+      const affectedRampFactor = beforeDemolition ? originalRampFactor : redeploymentRampFactor;
+      const operatingGuns = stableGuns + affectedActiveGuns;
+      const operatingStations = stableStations + affectedActiveStations;
+      const rampWeightedGuns = (stableGuns * originalRampFactor) + (affectedActiveGuns * affectedRampFactor);
+      const rampFactor = operatingGuns === 0 ? 0 : rampWeightedGuns / operatingGuns;
+      const serviceFee = rampWeightedGuns * annualServicePerGunDay * days * seasonality
+        * cohort.cityRevenueAdjustment;
       const gmv = serviceFee / historicalServiceFeeRate;
       const electricityPassThrough = gmv - serviceFee;
       const cohortPropertyShare = cohort.propertyShare === undefined
@@ -155,7 +207,7 @@ export function projectOperations(cohorts, config) {
         : requireFinite(cohort.fixedRentPerStation, `fixedRentPerStation for ${cohort.cohortId}`);
       const propertyCost = cohort.propertyMode === "分成"
         ? serviceFee * cohortPropertyShare
-        : cohort.stations * cohortFixedRent;
+        : operatingStations * cohortFixedRent;
       const otherOpex = serviceFee * otherOpexRate;
       const operatingContribution = serviceFee - propertyCost - otherOpex;
       const row = {
@@ -164,8 +216,13 @@ export function projectOperations(cohorts, config) {
         month,
         monthIndex: monthOffset + 1,
         operatingAge,
-        guns: cohort.guns,
-        stations: cohort.stations,
+        guns: operatingGuns,
+        stations: operatingStations,
+        installedGuns: cohort.guns,
+        installedStations: cohort.stations,
+        offlineGuns: currentMonthIndex === cohort.demolitionMonthIndex ? cohort.expectedDemolishedGuns : 0,
+        demolishedGuns: currentMonthIndex === cohort.demolitionMonthIndex ? cohort.expectedDemolishedGuns : 0,
+        redeployedGuns: currentMonthIndex === cohort.redeploymentOnlineMonthIndex ? cohort.expectedDemolishedGuns : 0,
         days,
         seasonality,
         rampFactor,
@@ -195,6 +252,9 @@ export function projectOperations(cohorts, config) {
       newGuns: normalizedCohorts
         .filter((cohort) => cohort.onlineMonthIndex === currentMonthIndex)
         .reduce((sum, cohort) => sum + cohort.guns, 0),
+      demolishedGuns: activeRows.reduce((sum, row) => sum + row.demolishedGuns, 0),
+      offlineGuns: activeRows.reduce((sum, row) => sum + row.offlineGuns, 0),
+      redeployedGuns: activeRows.reduce((sum, row) => sum + row.redeployedGuns, 0),
       operatingGuns,
       operatingStations,
       days,

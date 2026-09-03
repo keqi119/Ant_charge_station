@@ -16,6 +16,7 @@ export function render(container, { snapshot }) {
       fullTermDscr: scenario.dscr.fullTermDscr,
       minimumDscr: scenario.dscr.minimumMonthlyDscr.value,
       threeYearBalance: scenario.waterfall.monthly[35].endingLeaseBalance,
+      relocationCapex: scenario.plan.demolitionSummary?.relocationCapex ?? 0,
     })),
     pageSize: 50,
     columns: [
@@ -25,6 +26,9 @@ export function render(container, { snapshot }) {
       { key: "financeDelayMonths", label: "放款延迟" }, { key: "deploymentMonths", label: "建设月数" },
       { key: "annualRate", label: "年化利率", format: (value) => `${formatNumber(value * 100, 0)}%` },
       { key: "otherOpexRate", label: "其他OPEX", format: (value) => `${formatNumber(value * 100, 0)}%` },
+      { key: "demolitionRate", label: "拆站概率", format: (value) => `${formatNumber(value * 100, 0)}%` },
+      { key: "operatingMonthsBeforeDemolition", label: "拆站前运营月数" },
+      { key: "relocationCapex", label: "迁建追加投入", format: (value) => `¥${money.format(value)}` },
       { key: "peakFundingGap", label: "峰值缺口", format: (value) => `¥${money.format(value)}` },
       { key: "peakMonth", label: "峰值月" },
       { key: "fullTermDscr", label: "全期DSCR", format: (value) => `${formatNumber(value, 2)}x` },

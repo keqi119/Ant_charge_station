@@ -171,3 +171,34 @@ test("seasonality keys must be unique integer calendar months from 1 through 12"
     );
   }
 });
+
+test("demolished stations stop for one month then restart their revenue ramp at the new site", () => {
+  const out = projectOperations([{
+    cohortId: "C1",
+    city: "测试城",
+    onlineMonth: "2027-01",
+    stations: 1,
+    guns: 4,
+    expectedDemolishedStations: 0.25,
+    expectedDemolishedGuns: 1,
+    demolitionMonth: "2027-03",
+    redeploymentOnlineMonth: "2027-04",
+  }], baseConfig({
+    horizonMonths: 5,
+    annualServicePerGunDay: 10,
+    seasonalityByMonth: ALL_MONTHS_FLAT,
+    ramp: [0.5, 1],
+    propertyMode: "固定",
+    fixedRentPerStation: 200,
+    otherOpexRate: 0,
+    historicalServiceFeeRate: 0.25,
+  }));
+
+  assert.deepEqual(out.monthly.map((row) => row.serviceFee), [620, 1120, 930, 1050, 1240]);
+  assert.deepEqual(out.monthly.map((row) => row.operatingGuns), [4, 4, 3, 4, 4]);
+  assert.deepEqual(out.monthly.map((row) => row.offlineGuns), [0, 0, 1, 0, 0]);
+  assert.deepEqual(out.monthly.map((row) => row.demolishedGuns), [0, 0, 1, 0, 0]);
+  assert.deepEqual(out.monthly.map((row) => row.redeployedGuns), [0, 0, 0, 1, 0]);
+  assert.deepEqual(out.monthly.map((row) => row.propertyCost), [200, 200, 150, 200, 200]);
+  assert.equal(out.monthly[3].weightedRamp, 0.875);
+});

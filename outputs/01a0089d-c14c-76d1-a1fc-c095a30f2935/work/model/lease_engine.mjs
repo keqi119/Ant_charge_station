@@ -256,7 +256,26 @@ export function buildCashWaterfall(operations, cohorts, leases, config) {
     ),
     amount: requireFinite(cohort.totalCapex, `cohort ${index + 1} totalCapex`),
   }));
-  const supplierPayments = aggregateByMonthIndex(supplierRows, "paymentMonthIndex", "amount", horizonMonths, "supplier payment");
+  const baseSupplierPayments = aggregateByMonthIndex(supplierRows, "paymentMonthIndex", "amount", horizonMonths, "supplier payment");
+  const relocationRows = cohorts.filter((cohort) => (cohort.relocationCapex ?? 0) > 0).map((cohort, index) => ({
+    paymentMonthIndex: relativeMonthIndex(
+      cohort.relocationSupplierPaymentMonth,
+      startMonth,
+      `relocation cohort ${index + 1} supplierPaymentMonth`,
+    ),
+    amount: requireFinite(cohort.relocationCapex, `relocation cohort ${index + 1} capex`),
+  })).filter((row) => {
+    if (row.paymentMonthIndex < 1) throw new RangeError("relocation supplier payment precedes the cash-flow horizon");
+    return row.paymentMonthIndex <= horizonMonths;
+  });
+  const relocationSupplierPayments = aggregateByMonthIndex(
+    relocationRows,
+    "paymentMonthIndex",
+    "amount",
+    horizonMonths,
+    "relocation supplier payment",
+  );
+  const supplierPayments = baseSupplierPayments.map((amount, index) => amount + relocationSupplierPayments[index]);
   const disbursements = aggregateByMonthIndex(leases, "disbursementMonthIndex", "principal", horizonMonths, "lease disbursement");
   const paymentRows = leases.flatMap((lease) => lease.payments);
   const levelRents = aggregateByMonthIndex(paymentRows, "paymentMonthIndex", "levelRent", horizonMonths, "lease payment");
@@ -298,6 +317,7 @@ export function buildCashWaterfall(operations, cohorts, leases, config) {
       monthIndex,
       period: monthIndex <= reportMonths ? "report" : "debtTail",
       supplierPayment: supplierPayments[index],
+      relocationSupplierPayment: relocationSupplierPayments[index],
       leaseDisbursement: disbursements[index],
       levelRent: levelRents[index],
       residualPayment: residualPayments[index],
@@ -468,6 +488,8 @@ export function runScenario(name, inputs) {
       otherOpexRate: operationsConfig.otherOpexRate,
       headquartersMonthly: operationsConfig.headquartersMonthly,
       operatingTaxRate: operationsConfig.operatingTaxRate,
+      demolitionRate: deploymentConfig.demolitionRate,
+      operatingMonthsBeforeDemolition: deploymentConfig.operatingMonthsBeforeDemolition,
     },
     plan,
     operations,

@@ -42,6 +42,17 @@ export function render(container, { snapshot }) {
   );
   container.append(kpis);
 
+  const demolition = document.createElement("section");
+  demolition.className = "content-card";
+  demolition.innerHTML = `<div class="card-heading"><h2>拆站迁建影响</h2><p>基准按一次拆站、停运1个月、设备复用并在新址重启收入爬坡测算。</p></div>
+    <div class="mini-metric-grid">
+      <div class="mini-metric"><span>预计拆站</span><strong data-demolition-kpi="scope">${formatNumber(result.kpis.expectedDemolishedStations, 0)}站 / ${formatNumber(result.kpis.expectedDemolishedGuns, 0)}枪</strong></div>
+      <div class="mini-metric"><span>可复用设备原值</span><strong data-demolition-kpi="equipment">${yi(result.kpis.reusableEquipmentValue)}</strong></div>
+      <div class="mini-metric"><span>迁建追加投入</span><strong data-demolition-kpi="capex">${yi(result.kpis.relocationCapex)}</strong></div>
+      <div class="mini-metric"><span>原始建站投入</span><strong>${yi(result.kpis.originalInvestment)}</strong></div>
+    </div>`;
+  container.append(demolition);
+
   if (result.warnings.length > 0) {
     const warning = document.createElement("aside");
     warning.className = "underwriting-warning";

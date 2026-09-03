@@ -12,7 +12,7 @@ function readJson(relativeUrl) {
 
 function fullState() {
   return createBaselineState({
-    metadata: { modelVersion: "html-model-1" },
+    metadata: { modelVersion: "html-model-2" },
     historyRows: readJson("../../data/historical-baseline.json"),
     cityInputs: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/city_inputs.json"),
     seasonalityInputs: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/seasonality_2024.json"),

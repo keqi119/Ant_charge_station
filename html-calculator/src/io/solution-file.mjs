@@ -38,6 +38,8 @@ function expectedAuditDetails(state) {
       leaseTermMonths: state.assumptions.leaseTermMonths,
       annualLeaseRate: state.assumptions.annualLeaseRate,
       leaseDelayMonths: state.assumptions.leaseDelayMonths,
+      demolitionRate: state.assumptions.demolitionRate,
+      operatingMonthsBeforeDemolition: state.assumptions.operatingMonthsBeforeDemolition,
     },
   };
 }
@@ -108,6 +110,15 @@ function validateAssumptions(assumptions) {
     || assumptions.residualRate > assumptions.leaseAdvanceRate) throw new Error("留购比例不能超过融资比例");
   if (!new Set(["分成", "固定"]).has(assumptions.propertyMode)) throw new Error("物业结算方式无效");
   if (!Number.isInteger(assumptions.supplierTermsMonths) || assumptions.supplierTermsMonths < 0) throw new Error("供应商账期无效");
+  if (!Number.isFinite(assumptions.demolitionRate)
+    || assumptions.demolitionRate < 0 || assumptions.demolitionRate > 1) {
+    throw new Error("拆站概率必须为0%至100%");
+  }
+  if (!Number.isInteger(assumptions.operatingMonthsBeforeDemolition)
+    || assumptions.operatingMonthsBeforeDemolition < 0
+    || assumptions.operatingMonthsBeforeDemolition > 60) {
+    throw new Error("拆站前实际运营月数必须为0至60个月整数");
+  }
 
   const shares = requireArray(assumptions.rolloutShares, "投放曲线");
   if (shares.length === 0 || shares.length > 18

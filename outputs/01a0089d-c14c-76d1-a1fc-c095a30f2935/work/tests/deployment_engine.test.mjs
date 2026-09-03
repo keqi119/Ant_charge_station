@@ -236,3 +236,71 @@ test("fixed cities cannot have zero sites and an expected roster must be exact",
     /expected fixed|fixed.*roster/i,
   );
 });
+
+test("demolition assumptions preserve reusable equipment and schedule one unfinanced relocation", () => {
+  const plan = buildDeploymentPlan([{
+    city: "测试城",
+    isFixed: false,
+    fixedOrder: null,
+    twoGunSites: 1,
+    fourGunSites: 1,
+    targetGuns: 6,
+  }], {
+    startMonth: "2026-09",
+    shares: [1],
+    totalGuns: 6,
+    supplierTermsMonths: 2,
+    financeDelayMonths: 1,
+    demolitionRate: 0.5,
+    operatingMonthsBeforeDemolition: 2,
+  });
+
+  const [cohort] = plan.cohorts;
+  assert.equal(cohort.expectedDemolishedStations, 1);
+  assert.equal(cohort.expectedDemolishedGuns, 3);
+  assert.equal(cohort.demolitionMonth, "2026-11");
+  assert.equal(cohort.redeploymentOnlineMonth, "2026-12");
+  assert.equal(cohort.relocationSupplierPaymentMonth, "2027-01");
+  assert.equal(cohort.reusableEquipmentValue, 30500);
+  assert.equal(cohort.relocationEngineeringCost, 25000);
+  assert.equal(cohort.relocationChannelCost, 10000);
+  assert.equal(cohort.relocationCapex, 35000);
+  assert.deepEqual(plan.demolitionSummary, {
+    demolitionRate: 0.5,
+    operatingMonthsBeforeDemolition: 2,
+    expectedDemolishedStations: 1,
+    expectedDemolishedGuns: 3,
+    reusableEquipmentValue: 30500,
+    relocationEngineeringCost: 25000,
+    relocationChannelCost: 10000,
+    relocationCapex: 35000,
+  });
+
+  for (const [demolitionRate, operatingMonthsBeforeDemolition] of [[-0.01, 2], [1.01, 2], [0.1, 1.5]]) {
+    assert.throws(() => buildDeploymentPlan([{
+      city: "测试城", isFixed: false, fixedOrder: null,
+      twoGunSites: 1, fourGunSites: 1, targetGuns: 6,
+    }], {
+      startMonth: "2026-09", shares: [1], totalGuns: 6,
+      supplierTermsMonths: 2, financeDelayMonths: 1,
+      demolitionRate, operatingMonthsBeforeDemolition,
+    }), /demolition|operating months/i);
+  }
+});
+
+test("zero demolition exposure does not publish demolition or relocation event dates", () => {
+  const plan = buildDeploymentPlan([{
+    city: "测试城", isFixed: false, fixedOrder: null,
+    twoGunSites: 1, fourGunSites: 0, targetGuns: 2,
+  }], {
+    startMonth: "2026-09", shares: [1], totalGuns: 2,
+    supplierTermsMonths: 2, financeDelayMonths: 1,
+    demolitionRate: 0, operatingMonthsBeforeDemolition: 2,
+  });
+
+  const [cohort] = plan.cohorts;
+  assert.equal(cohort.expectedDemolishedStations, 0);
+  assert.equal(cohort.demolitionMonth, null);
+  assert.equal(cohort.redeploymentOnlineMonth, null);
+  assert.equal(cohort.relocationSupplierPaymentMonth, null);
+});
