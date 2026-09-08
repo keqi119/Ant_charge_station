@@ -61,6 +61,7 @@ export function render(container, { snapshot }) {
     columns: [
       { key: "month", label: "月份" },
       { key: "supplierPayment", label: "供应商付款", format: (value) => `¥${money.format(value)}` },
+      { key: "relocationSupplierPayment", label: "其中迁建付款", format: (value) => `¥${money.format(value)}` },
       { key: "leaseDisbursement", label: "租赁放款", format: (value) => `¥${money.format(value)}` },
       { key: "openingLeaseBalance", label: "期初租赁余额", format: (value) => `¥${money.format(value)}` },
       { key: "financeCost", label: "融资成本", format: (value) => `¥${money.format(value)}` },

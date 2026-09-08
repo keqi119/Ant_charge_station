@@ -11,7 +11,7 @@ function readJson(relativeUrl) {
 
 function fullState() {
   return createBaselineState({
-    metadata: { modelVersion: "html-model-1" },
+    metadata: { modelVersion: "html-model-2" },
     historyRows: readJson("../../data/historical-baseline.json"),
     cityInputs: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/city_inputs.json"),
     seasonalityInputs: readJson("../../../outputs/01a0089d-c14c-76d1-a1fc-c095a30f2935/work/data/seasonality_2024.json"),
@@ -46,7 +46,7 @@ test("portable solution round-trips the complete approved state", () => {
   assert.equal(parsed.format, "ant-charge-station-solution");
   assert.equal(parsed.version, 1);
   assert.equal(parsed.savedAt, "2026-08-17T00:00:00.000Z");
-  assert.equal(parsed.modelVersion, "html-model-1");
+  assert.equal(parsed.modelVersion, "html-model-2");
   assert.equal(parsed.name, "基准方案");
   assert.deepEqual(parsed.audit, {
     calculatedAt: "2026-08-17T00:00:00.000Z",
@@ -61,6 +61,8 @@ test("portable solution round-trips the complete approved state", () => {
       leaseTermMonths: 36,
       annualLeaseRate: 0.08,
       leaseDelayMonths: 1,
+      demolitionRate: 0.10,
+      operatingMonthsBeforeDemolition: 2,
     },
   });
   assert.equal(parsed.state.history.rows.length, 3049);
@@ -83,6 +85,9 @@ test("parser rejects foreign versions, malformed arrays, dates, and financing do
     ["invalid finance ratio", (value) => { value.state.assumptions.leaseAdvanceRate = 0.75; }],
     ["invalid rate", (value) => { value.state.assumptions.annualLeaseRate = 0.07; }],
     ["invalid term", (value) => { value.state.assumptions.leaseTermMonths = 30; }],
+    ["invalid demolition rate", (value) => { value.state.assumptions.demolitionRate = 1.01; }],
+    ["invalid demolition months", (value) => { value.state.assumptions.operatingMonthsBeforeDemolition = 2.5; }],
+    ["drifted demolition audit", (value) => { value.audit.inputSummary.demolitionRate = 0.25; }],
   ];
 
   for (const [label, corrupt] of corruptions) {

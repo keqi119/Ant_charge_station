@@ -110,10 +110,28 @@ function checkDeployment(context) {
   const latest = cohorts.reduce((maximum, cohort) => Math.max(maximum, monthIndex(cohort.onlineMonth) ?? Infinity), -Infinity);
   const validHorizon = monthly.length > 0 && monthly.length <= 18 && monthly.at(-1) > 0
     && (cohorts.length === 0 || (start !== null && latest - start < 18));
+  const demolitionRate = context.state?.assumptions?.demolitionRate;
+  const demolitionMonths = context.state?.assumptions?.operatingMonthsBeforeDemolition;
+  const demolition = context.deployment?.demolitionSummary;
+  const demolitionValid = Number.isFinite(demolitionRate) && demolitionRate >= 0 && demolitionRate <= 1
+    && Number.isInteger(demolitionMonths) && demolitionMonths >= 0 && demolitionMonths <= 60
+    && nearlyEqual(demolition?.expectedDemolishedGuns, target * demolitionRate)
+    && cohorts.every((cohort) => {
+      if (!nearlyEqual(cohort.expectedDemolishedGuns, cohort.guns * demolitionRate)) return false;
+      if (cohort.expectedDemolishedGuns === 0) {
+        return cohort.demolitionMonth === null
+          && cohort.redeploymentOnlineMonth === null
+          && cohort.relocationSupplierPaymentMonth === null;
+      }
+      return monthIndex(cohort.demolitionMonth) === monthIndex(cohort.onlineMonth) + demolitionMonths
+        && monthIndex(cohort.redeploymentOnlineMonth) === monthIndex(cohort.demolitionMonth) + 1
+        && monthIndex(cohort.relocationSupplierPaymentMonth)
+          === monthIndex(cohort.demolitionMonth) + context.state.assumptions.supplierTermsMonths;
+    });
   return result(
     "deployment-total-and-horizon",
-    sum(monthly.map((guns) => ({ guns })), "guns") === target && validHorizon,
-    `${monthly.length}个月投放，合计 ${monthly.reduce((total, guns) => total + guns, 0).toLocaleString()} 枪`,
+    sum(monthly.map((guns) => ({ guns })), "guns") === target && validHorizon && demolitionValid,
+    `${monthly.length}个月投放，合计 ${monthly.reduce((total, guns) => total + guns, 0).toLocaleString()} 枪；预计迁建 ${(demolition?.expectedDemolishedGuns ?? 0).toLocaleString()} 枪`,
   );
 }
 
@@ -136,9 +154,19 @@ function checkStationCosts(context) {
   ));
   const invalid = (context.deployment?.cohorts ?? []).filter((cohort) => {
     const expected = expectedCohortCosts(cohort, costs);
+    const relocationEngineering = (cohort.expectedDemolishedTwoGunSites ?? 0) * costs.twoGun.engineering
+      + (cohort.expectedDemolishedFourGunSites ?? 0) * costs.fourGun.engineering;
+    const relocationChannel = (cohort.expectedDemolishedTwoGunSites ?? 0) * costs.twoGun.channel
+      + (cohort.expectedDemolishedFourGunSites ?? 0) * costs.fourGun.channel;
+    const reusableEquipment = (cohort.expectedDemolishedTwoGunSites ?? 0) * costs.twoGun.equipment
+      + (cohort.expectedDemolishedFourGunSites ?? 0) * costs.fourGun.equipment;
     return !nearlyEqual(cohort.totalCapex, expected.totalCapex)
       || !nearlyEqual(cohort.eligibleBasis, expected.eligibleBasis)
-      || !nearlyEqual(cohort.channelCost, expected.channelCost);
+      || !nearlyEqual(cohort.channelCost, expected.channelCost)
+      || !nearlyEqual(cohort.relocationEngineeringCost, relocationEngineering)
+      || !nearlyEqual(cohort.relocationChannelCost, relocationChannel)
+      || !nearlyEqual(cohort.relocationCapex, relocationEngineering + relocationChannel)
+      || !nearlyEqual(cohort.reusableEquipmentValue, reusableEquipment);
   });
   return result("station-cost-components", fieldsValid && invalid.length === 0, invalid.length === 0 ? "逐批成本组成一致" : `${invalid.length} 个批次成本不一致`);
 }
@@ -151,16 +179,30 @@ function checkCapex(context) {
   ));
   const leaseBasis = sum(leases, "originalValue");
   const eligible = sum(cohorts, "eligibleBasis");
+  const originalInvestment = sum(cohorts, "totalCapex");
+  const relocationInvestment = sum(cohorts, "relocationCapex");
+  const totalInvestment = originalInvestment + relocationInvestment;
   return result(
     "capex-and-eligible-basis",
-    invalid.length === 0 && nearlyEqual(leaseBasis, eligible),
-    `总投资 ${sum(cohorts, "totalCapex").toLocaleString()} 元，可融资原值 ${eligible.toLocaleString()} 元`,
+    invalid.length === 0
+      && nearlyEqual(leaseBasis, eligible)
+      && nearlyEqual(relocationInvestment, context.deployment?.demolitionSummary?.relocationCapex ?? 0),
+    `总投资 ${totalInvestment.toLocaleString()} 元；原始建站投入 ${originalInvestment.toLocaleString()} 元，迁建追加投入 ${relocationInvestment.toLocaleString()} 元；可融资原值 ${eligible.toLocaleString()} 元`,
   );
 }
 
 function checkSupplierPayments(context) {
-  const expected = groupByMonth(context.deployment?.cohorts ?? [], "supplierPaymentMonth", "totalCapex");
+  const cohorts = context.deployment?.cohorts ?? [];
   const actual = new Map((context.waterfall?.monthly ?? []).map((row) => [row.month, row.supplierPayment]));
+  const expected = groupByMonth(cohorts, "supplierPaymentMonth", "totalCapex");
+  const relocation = groupByMonth(
+    cohorts.filter((cohort) => (cohort.relocationCapex ?? 0) > 0),
+    "relocationSupplierPaymentMonth",
+    "relocationCapex",
+  );
+  for (const [month, amount] of relocation) {
+    if (actual.has(month)) expected.set(month, (expected.get(month) ?? 0) + amount);
+  }
   const months = new Set([...expected.keys(), ...actual.keys()]);
   const passed = [...months].every((month) => nearlyEqual(expected.get(month) ?? 0, actual.get(month) ?? 0));
   return result("supplier-payable-rollforward", passed, `累计供应商付款 ${sum(context.waterfall?.monthly ?? [], "supplierPayment").toLocaleString()} 元`);

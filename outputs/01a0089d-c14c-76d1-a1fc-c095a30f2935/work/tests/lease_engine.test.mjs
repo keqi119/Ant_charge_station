@@ -288,6 +288,32 @@ test("cash waterfall accepts the unchanged Task 6 operations result object", () 
   assert.deepEqual(operations, before);
 });
 
+test("cash waterfall includes relocation construction and channel costs without new lease proceeds", () => {
+  const cohort = {
+    ...FOUR_GUN_COHORT,
+    relocationSupplierPaymentMonth: "2026-12",
+    relocationCapex: 35000,
+  };
+  const leases = buildLeaseCohorts([cohort], {
+    startMonth: START_MONTH,
+    financeRatio: 1,
+    annualRate: 0.08,
+    termMonths: 36,
+    residualRate: 0.01,
+  });
+  const waterfall = buildCashWaterfall(operationsFixture(() => 0), [cohort], leases, {
+    initialCash: 0,
+    shareholderFunding: 0,
+    reportMonths: 36,
+  });
+
+  assert.equal(waterfall.monthly.find((row) => row.month === "2026-10").supplierPayment, 71000);
+  assert.equal(waterfall.monthly.find((row) => row.month === "2026-12").relocationSupplierPayment, 35000);
+  assert.equal(waterfall.monthly.find((row) => row.month === "2026-12").supplierPayment, 35000);
+  assert.equal(waterfall.monthly.reduce((sum, row) => sum + row.leaseDisbursement, 0), 61000);
+  assert.equal(waterfall.minimumShareholderFunding > 45000, true);
+});
+
 test("DSCR summary uses ratio of sums and returns null for debt-free periods", () => {
   const monthly = Array.from({ length: 60 }, (_, index) => ({
     month: addMonths(START_MONTH, index),

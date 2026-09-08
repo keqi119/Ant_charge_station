@@ -62,6 +62,24 @@ export function buildDeploymentPlan(allocations, config) {
   const supplierTermsMonths = requireNonNegativeInteger(config.supplierTermsMonths, "supplierTermsMonths");
   const financeDelayMonths = requireNonNegativeInteger(config.financeDelayMonths, "financeDelayMonths");
   if (financeDelayMonths > 2) throw new RangeError("financeDelayMonths must be 0, 1, or 2");
+  const hasDemolitionAssumptions = config.demolitionRate !== undefined
+    || config.operatingMonthsBeforeDemolition !== undefined;
+  let demolitionRate = 0;
+  let operatingMonthsBeforeDemolition = 0;
+  if (hasDemolitionAssumptions) {
+    demolitionRate = config.demolitionRate;
+    if (typeof demolitionRate !== "number" || !Number.isFinite(demolitionRate)
+      || demolitionRate < 0 || demolitionRate > 1) {
+      throw new RangeError("demolitionRate must be between 0 and 1");
+    }
+    operatingMonthsBeforeDemolition = requireNonNegativeInteger(
+      config.operatingMonthsBeforeDemolition,
+      "operating months before demolition",
+    );
+    if (operatingMonthsBeforeDemolition > 60) {
+      throw new RangeError("operating months before demolition cannot exceed 60");
+    }
+  }
   const targets = monthlyTargets(totalGuns, config.shares);
   const costByStationType = config.costByStationType ?? BASE_ASSUMPTIONS.costByStationType;
   const twoGunCost = requireCost(costByStationType?.twoGun, "two-gun station");
@@ -229,6 +247,32 @@ export function buildDeploymentPlan(allocations, config) {
         eligibleBasis,
         channelCost,
       };
+      if (hasDemolitionAssumptions) {
+        const expectedDemolishedTwoGunSites = group.twoGunSites * demolitionRate;
+        const expectedDemolishedFourGunSites = group.fourGunSites * demolitionRate;
+        const expectedDemolishedStations = expectedDemolishedTwoGunSites + expectedDemolishedFourGunSites;
+        const expectedDemolishedGuns = (2 * expectedDemolishedTwoGunSites) + (4 * expectedDemolishedFourGunSites);
+        const demolitionMonthIndex = onlineMonthIndex + operatingMonthsBeforeDemolition;
+        const hasDemolitionExposure = expectedDemolishedStations > 0;
+        Object.assign(cohort, {
+          demolitionRate,
+          operatingMonthsBeforeDemolition,
+          expectedDemolishedTwoGunSites,
+          expectedDemolishedFourGunSites,
+          expectedDemolishedStations,
+          expectedDemolishedGuns,
+          demolitionMonth: hasDemolitionExposure ? formatMonth(demolitionMonthIndex) : null,
+          redeploymentOnlineMonth: hasDemolitionExposure ? formatMonth(demolitionMonthIndex + 1) : null,
+          relocationSupplierPaymentMonth: hasDemolitionExposure ? formatMonth(demolitionMonthIndex + supplierTermsMonths) : null,
+          reusableEquipmentValue: (expectedDemolishedTwoGunSites * twoGunCost.equipment)
+            + (expectedDemolishedFourGunSites * fourGunCost.equipment),
+          relocationEngineeringCost: (expectedDemolishedTwoGunSites * twoGunCost.engineering)
+            + (expectedDemolishedFourGunSites * fourGunCost.engineering),
+          relocationChannelCost: (expectedDemolishedTwoGunSites * twoGunCost.channel)
+            + (expectedDemolishedFourGunSites * fourGunCost.channel),
+        });
+        cohort.relocationCapex = cohort.relocationEngineeringCost + cohort.relocationChannelCost;
+      }
       cohorts.push(cohort);
       if (firstOnlineMonthByCity[group.city] === undefined || onlineMonth < firstOnlineMonthByCity[group.city]) {
         firstOnlineMonthByCity[group.city] = onlineMonth;
@@ -251,5 +295,24 @@ export function buildDeploymentPlan(allocations, config) {
       }
     }
   }
-  return { cohorts, monthlyGuns, firstOnlineMonthByCity };
+  const result = { cohorts, monthlyGuns, firstOnlineMonthByCity };
+  if (hasDemolitionAssumptions) {
+    const expectedDemolishedTwoGunSites = cohorts.reduce((sum, cohort) => sum + cohort.twoGunSites, 0) * demolitionRate;
+    const expectedDemolishedFourGunSites = cohorts.reduce((sum, cohort) => sum + cohort.fourGunSites, 0) * demolitionRate;
+    result.demolitionSummary = {
+      demolitionRate,
+      operatingMonthsBeforeDemolition,
+      expectedDemolishedStations: expectedDemolishedTwoGunSites + expectedDemolishedFourGunSites,
+      expectedDemolishedGuns: (2 * expectedDemolishedTwoGunSites) + (4 * expectedDemolishedFourGunSites),
+      reusableEquipmentValue: (expectedDemolishedTwoGunSites * twoGunCost.equipment)
+        + (expectedDemolishedFourGunSites * fourGunCost.equipment),
+      relocationEngineeringCost: (expectedDemolishedTwoGunSites * twoGunCost.engineering)
+        + (expectedDemolishedFourGunSites * fourGunCost.engineering),
+      relocationChannelCost: (expectedDemolishedTwoGunSites * twoGunCost.channel)
+        + (expectedDemolishedFourGunSites * fourGunCost.channel),
+    };
+    result.demolitionSummary.relocationCapex = result.demolitionSummary.relocationEngineeringCost
+      + result.demolitionSummary.relocationChannelCost;
+  }
+  return result;
 }

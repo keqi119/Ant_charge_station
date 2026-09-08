@@ -32,5 +32,8 @@ export function render(container, { snapshot, actions }) {
     grid.append(section);
   }
   container.append(grid);
+  const demolition = card("拆站后的成本处理", "设备可拆卸并在新址二次利用，不重复购置；原址工程与渠道费用成为沉没成本，新址迁建需重新投入工程及渠道费用，且不计入原融资租赁放款。");
+  demolition.innerHTML += `<div class="cost-summary"><span>预计拆站规模<strong>${money.format(snapshot.result.kpis.expectedDemolishedStations)}站</strong></span><span>可复用设备原值<strong>¥${money.format(snapshot.result.kpis.reusableEquipmentValue)}</strong></span><span>迁建追加投入<strong>¥${money.format(snapshot.result.kpis.relocationCapex)}</strong></span></div>`;
+  container.append(demolition);
   return () => {};
 }

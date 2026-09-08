@@ -32,7 +32,7 @@ test("shows the approved twelve-page navigation in order", async ({ page }) => {
   await expect(page.locator("[data-page-id][aria-current=true]")).toHaveCount(1);
   await expect(page.locator("[data-model-status]")).toContainText(/警告|通过/);
   await expect(page.locator("[data-solution-name]")).toHaveText("基准方案");
-  await expect(page.locator("[data-model-version]")).toHaveText("html-model-1");
+  await expect(page.locator("[data-model-version]")).toHaveText("html-model-2");
   await expect(page.locator("[data-last-calculated]")).toHaveText(/\d{4}.*\d{2}:\d{2}/);
   expect(pageErrors).toEqual([]);
 });
@@ -44,6 +44,20 @@ test("input pages expose the approved assumptions and audit data", async ({ page
   await expect(page.locator("[data-path='assumptions.leaseTermMonths']")).toHaveValue("36");
   await expect(page.locator("[data-path='assumptions.annualLeaseRate']")).toHaveValue("0.08");
   await expect(page.locator("[data-path='assumptions.propertyMode']")).toHaveValue("分成");
+  await expect(page.locator("[data-path='assumptions.demolitionRate']")).toHaveValue("10");
+  await expect(page.locator("[data-path='assumptions.operatingMonthsBeforeDemolition']")).toHaveValue("2");
+
+  await page.locator("[data-page-id=summary]").click();
+  await expect(page.locator("[data-demolition-kpi=scope]")).toHaveText("970站 / 3,000枪");
+  await expect(page.locator("[data-demolition-kpi=capex]")).toHaveText("¥0.34亿元");
+
+  await page.locator("[data-page-id=assumptions]").click();
+  await page.locator("[data-path='assumptions.demolitionRate']").fill("0");
+  await page.locator("[data-page-id=deployment]").click();
+  const firstDeploymentRow = page.locator("[data-page-panel=deployment] tbody tr").first();
+  await expect(firstDeploymentRow.locator("td").nth(10)).toHaveText("");
+  await expect(firstDeploymentRow.locator("td").nth(11)).toHaveText("");
+  await expect(firstDeploymentRow.locator("td").nth(12)).toHaveText("");
 
   await page.locator("[data-page-id=city-allocation]").click();
   await expect(page.locator("[data-allocation-total]")).toHaveText("30,000");

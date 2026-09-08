@@ -30,6 +30,8 @@ export const BASE_ASSUMPTIONS = Object.freeze({
   otherOpexRate: 0.10,
   headquartersMonthly: 0,
   operatingTaxRate: 0,
+  demolitionRate: 0.10,
+  operatingMonthsBeforeDemolition: 2,
   leaseAdvanceRate: 1,
   leaseTermMonths: 36,
   annualLeaseRate: 0.08,

@@ -8,7 +8,7 @@ test("summary reconciles and owns exactly five charts", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(releaseFileUrl);
   await expect(page.locator("[data-kpi=targetGuns]")).toHaveText("30,000");
-  await expect(page.locator("[data-kpi=totalInvestment]")).toContainText("6.40");
+  await expect(page.locator("[data-kpi=totalInvestment]")).toContainText("6.74");
   await expect(page.locator("canvas[data-chart-id]")).toHaveCount(5);
   await expect(page.locator("[data-model-status]")).toContainText("警告");
 

@@ -5,7 +5,7 @@ import { createAppState } from "../../src/app-state.mjs";
 
 function fixtureState() {
   return {
-    modelVersion: "html-model-1",
+    modelVersion: "html-model-2",
     assumptions: { targetGuns: 30000 },
     history: { rows: [{ date: new Date("2026-08-15T00:00:00Z") }], sourceName: "内置历史数据" },
   };
